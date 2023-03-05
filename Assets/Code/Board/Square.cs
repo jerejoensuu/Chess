@@ -9,10 +9,16 @@ namespace Code.Board
         [SerializeField] private SpriteRenderer spriteRenderer;
         
         public int index; // The index of the square on the board, 0-63
-        
+        public int pieceValue; // The value of the piece on the square, refer to Piece.cs
+
         public void SetColor(Color color)
         {
             spriteRenderer.color = color;
+        }
+        
+        public Vector2 GetCenter()
+        {
+            return transform.position;
         }
         
         public int GetIndexForNotation(string notation)
@@ -44,6 +50,29 @@ namespace Code.Board
             return index;
         }
         
+        public string GetNotation()
+        {
+            int fileIndex = index % 8;
+            int rankIndex = index / 8;
+            
+            string file = fileIndex switch
+            {
+                0 => "A",
+                1 => "B",
+                2 => "C",
+                3 => "D",
+                4 => "E",
+                5 => "F",
+                6 => "G",
+                7 => "H",
+                _ => ""
+            };
+            
+            string rank = (rankIndex + 1).ToString();
+            
+            return $"{file}{rank}";
+        }
+        
         public string GetNotationForIndex(int index)
         {
             int fileIndex = index % 8;
@@ -51,18 +80,18 @@ namespace Code.Board
             
             string file = fileIndex switch
             {
-                0 => "a",
-                1 => "b",
-                2 => "c",
-                3 => "d",
-                4 => "e",
-                5 => "f",
-                6 => "g",
-                7 => "h",
+                0 => "h",
+                1 => "g",
+                2 => "f",
+                3 => "e",
+                4 => "d",
+                5 => "c",
+                6 => "b",
+                7 => "a",
                 _ => ""
             };
             
-            string rank = (rankIndex + 1).ToString();
+            string rank = (8 - rankIndex).ToString();
             
             return $"{file}{rank}";
         }

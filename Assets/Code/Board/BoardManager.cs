@@ -1,3 +1,4 @@
+using System;
 using Code.UI;
 using UnityEngine;
 
@@ -21,8 +22,21 @@ namespace Code.Board
         private void Start()
         {
             _mainCamera = Camera.main;
-            _squares = boardBuilder.BuildBoard();
-            PlacePieces();
+        }
+        
+        public void SetupBoard(string fenString = "default")
+        {
+            _squares ??= boardBuilder.BuildBoard(fenString, squareSize);
+            try
+            {
+                boardBuilder.SetPiecesFromFenString(fenString, ref _squares);
+            }
+            catch (Exception)
+            {
+                Debug.LogError("Invalid FEN string:");
+                boardBuilder.SetPiecesFromFenString("default", ref _squares);
+            }
+            InstantiatePieces();
         }
 
         private void Update()
@@ -56,10 +70,14 @@ namespace Code.Board
             return _squares[index];
         }
         
-        private void PlacePieces()
+        private void InstantiatePieces()
         {
             foreach (Square square in _squares)
             {
+                if (square.transform.childCount > 0)
+                {
+                    Destroy(square.transform.GetChild(0).gameObject);
+                }
                 if (square.pieceValue == 0) continue;
                 
                 GameObject piece = Instantiate(piecePrefab, square.transform);

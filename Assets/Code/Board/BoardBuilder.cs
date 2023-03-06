@@ -30,17 +30,15 @@ namespace Code.Board
                 
                 squares[i] = squareScript;
             }
-            
-            if (fenString == "default")
-                fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-            
-            TranslateFenString(fenString, squares);
-            
+
             return squares;
         }
         
-        private void TranslateFenString(string fenString, Square[] squares)
+        public void SetPiecesFromFenString(string fenString, ref Square[] squares)
         {
+            if (fenString == "default")
+                fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            
             string[] fenFields = fenString.Split(' ');
             string[] fenRows = fenFields[0].Split('/');
             
@@ -51,7 +49,12 @@ namespace Code.Board
                 {
                     if (char.IsDigit(c))
                     {
-                        index += int.Parse(c.ToString());
+                        int emptySquares = int.Parse(c.ToString());
+                        for (int i = 0; i < emptySquares; i++)
+                        {
+                            squares[index].pieceValue = Piece.GetValueForFenChar('e');
+                            index++;
+                        }
                     }
                     else
                     {

@@ -14,26 +14,31 @@ namespace Code
         
         private void OnMouseDown()
         {
+            boardManager.CalculateCursorPosition();
             _selectedSquare = boardManager.GetSquareUnderCursor();
             if (_selectedSquare == null) return;
-            _selectedSquare.gameObject.transform.GetChild(0).parent = boardManager.cursor.transform;
+            boardManager.MovePieceToSquare(_selectedSquare.gameObject, boardManager.cursor);
         }
         
         private void OnMouseUp()
         {
+            boardManager.CalculateCursorPosition();
             if (_selectedSquare == null) return;
             _targetSquare = boardManager.GetSquareUnderCursor();
 
             if (_targetSquare == null || _targetSquare == _selectedSquare)
+            {
                 ResetCursor();
+                return;
+            }
             
-            boardManager.cursor.transform.GetChild(0).parent = _targetSquare.gameObject.transform;
+            boardManager.MovePieceToSquare(boardManager.cursor, _targetSquare.gameObject);
         }
         
         private void ResetCursor()
         {
             if (boardManager.cursor.transform.childCount == 0) return;
-            boardManager.cursor.transform.GetChild(0).parent = _selectedSquare.gameObject.transform;
+            boardManager.MovePieceToSquare(boardManager.cursor, _selectedSquare.gameObject);
             
             _selectedSquare = null;
             _targetSquare = null;

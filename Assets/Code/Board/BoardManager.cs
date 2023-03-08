@@ -24,7 +24,7 @@ namespace Code.Board
         {
             _mainCamera = Camera.main;
             
-            cursor = new GameObject("Cursor");
+            // cursor = new GameObject("Cursor");
             cursor.transform.parent = transform;
         }
         
@@ -48,7 +48,7 @@ namespace Code.Board
             CalculateCursorPosition();
         }
 
-        private void CalculateCursorPosition()
+        public void CalculateCursorPosition()
         {
             Vector3 mousePosition = Input.mousePosition;
             mousePosition.z = 10;
@@ -66,15 +66,13 @@ namespace Code.Board
 
         private Square GetSquareAtPosition(Vector2 position)
         {
+            if (position.x < -4 * squareSize || position.x > 4 * squareSize) return null;
+            if (position.y < -4 * squareSize || position.y > 4 * squareSize) return null;
+            
             int file = (int)(position.x / squareSize + 4);
             int rank = (int)(position.y / squareSize + 4);
 
             int index = rank * 8 + file;
-            
-            if (index < 0 || index > 63)
-            {
-                return null;
-            }
             
             return _squares[index];
         }
@@ -98,6 +96,13 @@ namespace Code.Board
                 spriteRenderer.sprite = pieceSprites[spriteIndex];
                 piece.name = pieceSprites[spriteIndex].name;
             }
+        }
+        
+        public void MovePieceToSquare(GameObject origin, GameObject target)
+        {
+            Transform piece = origin.gameObject.transform.GetChild(0);
+            piece.parent = target.transform;
+            piece.localPosition = Vector3.zero;
         }
     }
 }

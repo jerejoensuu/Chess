@@ -6,6 +6,7 @@ namespace Code.Board
 {
     public class BoardManager : MonoBehaviour
     {
+        public UserInputs userInputs;
         public BoardBuilder boardBuilder;
         public UIManager uiManager;
         [SerializeField] private GameObject piecePrefab;
@@ -17,11 +18,14 @@ namespace Code.Board
 
         private Square[] _squares;
 
-        [HideInInspector] public Vector2 cursorPosition;
+        public GameObject cursor;
 
         private void Start()
         {
             _mainCamera = Camera.main;
+            
+            cursor = new GameObject("Cursor");
+            cursor.transform.parent = transform;
         }
         
         public void SetupBoard(string fenString = "default")
@@ -48,11 +52,16 @@ namespace Code.Board
         {
             Vector3 mousePosition = Input.mousePosition;
             mousePosition.z = 10;
-            cursorPosition = _mainCamera.ScreenToWorldPoint(mousePosition);
+            cursor.transform.position = _mainCamera.ScreenToWorldPoint(mousePosition);
             
-            Square square = GetSquareAtPosition(cursorPosition);
+            Square square = GetSquareAtPosition(cursor.transform.position);
             if (square == null) return;
             uiManager.SetNotationText(square.GetNotation());
+        }
+        
+        public Square GetSquareUnderCursor()
+        {
+            return GetSquareAtPosition(cursor.transform.position);
         }
 
         private Square GetSquareAtPosition(Vector2 position)
@@ -87,6 +96,7 @@ namespace Code.Board
                 spriteIndex += Piece.GetType(square.pieceValue) - 1;
                 
                 spriteRenderer.sprite = pieceSprites[spriteIndex];
+                piece.name = pieceSprites[spriteIndex].name;
             }
         }
     }

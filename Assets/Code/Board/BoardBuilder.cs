@@ -5,7 +5,6 @@ namespace Code.Board
 {
     public class BoardBuilder : MonoBehaviour
     {
-        
         [SerializeField] private GameObject squarePrefab;
 
         [SerializeField] private Color lightColor;
@@ -13,23 +12,30 @@ namespace Code.Board
 
         public Square[] BuildBoard(string fenString = "default", float squareSize = 1f)
         {
+            GameObject tiles = new GameObject("Tiles");
+            tiles.transform.parent = transform;
+            
             Square[] squares = new Square[64];
             
             for (int i = 0; i < 64; i++)
             {
-                GameObject square = Instantiate(squarePrefab, transform);
+                GameObject square = Instantiate(squarePrefab, tiles.transform);
                 square.transform.position = GetTilePositionForIndex(i, squareSize);
                 square.transform.localScale = new Vector3(squareSize, squareSize, 1);
                 
                 Square squareScript = square.GetComponent<Square>();
                 squareScript.index = i;
-                square.name = squareScript.GetNotationForIndex(i);
+                square.name = squareScript.GetNotation();
                 
-                bool isLight = (i / 8 + i % 8) % 2 == 0;
-                squareScript.SetColor(isLight ? lightColor : darkColor);
+                bool isDark = (i / 8 + i % 8) % 2 == 0;
+                squareScript.SetColor(isDark ? darkColor : lightColor);
                 
                 squares[i] = squareScript;
             }
+            
+            // Create 2D collider for the board
+            BoxCollider2D col = gameObject.AddComponent<BoxCollider2D>();
+            col.size = new Vector2(8 * squareSize, 8 * squareSize);
 
             return squares;
         }
@@ -42,7 +48,8 @@ namespace Code.Board
             string[] fenFields = fenString.Split(' ');
             string[] fenRows = fenFields[0].Split('/');
             
-            int index = 0;
+            // Go through the board from left to right, top to bottom
+            int index = 56;
             foreach (string fenRow in fenRows)
             {
                 foreach (char c in fenRow)
@@ -53,15 +60,24 @@ namespace Code.Board
                         for (int i = 0; i < emptySquares; i++)
                         {
                             squares[index].pieceValue = Piece.GetValueForFenChar('e');
-                            index++;
+                            NextIndex();
                         }
                     }
                     else
                     {
                         squares[index].pieceValue = Piece.GetValueForFenChar(c);
-                        index++;
+                        NextIndex();
                     }
                 }
+            }
+            
+            void NextIndex()
+            {
+                // Go through the board from left to right, top to bottom
+                if (index % 8 == 7)
+                    index -= 15;
+                else
+                    index++;
             }
         }
         
@@ -73,7 +89,7 @@ namespace Code.Board
             int rank = index / 8;
             
             float x = file * squareSize - offset;
-            float y = -rank * squareSize + offset;
+            float y = rank * squareSize - offset;
             
             return new Vector3(x, y, 0);
         }

@@ -413,53 +413,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 197194184}
   m_CullTransparentMesh: 1
---- !u!1 &448448466
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 448448467}
-  - component: {fileID: 448448468}
-  m_Layer: 0
-  m_Name: Tiles
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &448448467
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 448448466}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1282010924}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &448448468
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 448448466}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a7652488e9a5da479e23fe908859289, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  squarePrefab: {fileID: 3570150717093903602, guid: 282904ddb826cbb41b8b4f464856de71, type: 3}
-  lightColor: {r: 0.93333334, g: 0.93333334, b: 0.8235294, a: 1}
-  darkColor: {r: 0.4627451, g: 0.5882353, b: 0.3372549, a: 1}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1170,6 +1123,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1282010924}
   - component: {fileID: 1282010925}
+  - component: {fileID: 1282010926}
+  - component: {fileID: 1282010927}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -1188,8 +1143,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 448448467}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1205,7 +1159,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cb16565381af7c4eb3a0910d7cf3eed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boardBuilder: {fileID: 448448468}
+  userInputs: {fileID: 1282010926}
+  boardBuilder: {fileID: 1282010927}
   uiManager: {fileID: 1240465689}
   piecePrefab: {fileID: 7783395455909470511, guid: e6827d56e65c7134a8ab6c36627298dc, type: 3}
   pieceSprites:
@@ -1222,7 +1177,35 @@ MonoBehaviour:
   - {fileID: 607601041, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
   - {fileID: 1029665755, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
   squareSize: 1
-  cursorPosition: {x: 0, y: 0}
+  cursor: {fileID: 0}
+--- !u!114 &1282010926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1282010922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19127c5df1e4e29a94d5352311eb066, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boardManager: {fileID: 1282010925}
+--- !u!114 &1282010927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1282010922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a7652488e9a5da479e23fe908859289, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  squarePrefab: {fileID: 3570150717093903602, guid: 282904ddb826cbb41b8b4f464856de71, type: 3}
+  lightColor: {r: 0.93333334, g: 0.93333334, b: 0.8235294, a: 1}
+  darkColor: {r: 0.4627451, g: 0.5882353, b: 0.3372549, a: 1}
 --- !u!1 &1408041785
 GameObject:
   m_ObjectHideFlags: 0

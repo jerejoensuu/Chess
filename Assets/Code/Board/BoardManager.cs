@@ -23,9 +23,7 @@ namespace Code.Board
         private void Start()
         {
             _mainCamera = Camera.main;
-            
-            // cursor = new GameObject("Cursor");
-            cursor.transform.parent = transform;
+            cursor = new GameObject("Cursor");
         }
         
         public void SetupBoard(string fenString = "default")

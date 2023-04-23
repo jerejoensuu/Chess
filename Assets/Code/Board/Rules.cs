@@ -53,10 +53,66 @@ namespace Code.Board
             return moves;
         }
 
-        private static List<int> GetMovesForPawn(int index, int color, Square[] squares)
+        private static List<int> GetMovesForPawn(int index, int color, Square[] squares, int enPassantIndex = -1)
         {
-            return GetSlidingMoves(index, Piece.King | color, squares);
+            List<int> moves = new List<int>();
+
+            int currentRow = index / 8;
+            int currentCol = index % 8;
+
+            int direction = color == Piece.White ? 1 : -1;
+
+            // Check if the pawn can move forward one square
+            int targetIndex = (currentRow + direction) * 8 + currentCol;
+            if (targetIndex >= 0 && targetIndex < 64 && squares[targetIndex].pieceValue == 0)
+            {
+                moves.Add(targetIndex);
+            }
+
+            // Check if the pawn can move forward two squares from its starting position
+            if ((currentRow == 1 && color == Piece.White) || (currentRow == 6 && color == Piece.Black))
+            {
+                targetIndex = (currentRow + 2 * direction) * 8 + currentCol;
+                if (squares[targetIndex].pieceValue == 0 &&
+                    squares[(currentRow + direction) * 8 + currentCol].pieceValue == 0)
+                {
+                    moves.Add(targetIndex);
+                }
+            }
+
+            // Check if the pawn can capture diagonally to the left
+            targetIndex = (currentRow + direction) * 8 + currentCol - 1;
+            if (targetIndex >= 0 && targetIndex < 64 && squares[targetIndex].pieceValue != 0 &&
+                Piece.GetColor(squares[targetIndex].pieceValue) != color)
+            {
+                moves.Add(targetIndex);
+            }
+
+            // Check if the pawn can capture diagonally to the right
+            targetIndex = (currentRow + direction) * 8 + currentCol + 1;
+            if (targetIndex >= 0 && targetIndex < 64 && squares[targetIndex].pieceValue != 0 &&
+                Piece.GetColor(squares[targetIndex].pieceValue) != color)
+            {
+                moves.Add(targetIndex);
+            }
+
+            // Check for en passant capture to the left
+            targetIndex = (currentRow + direction) * 8 + currentCol - 1;
+            if (targetIndex == enPassantIndex)
+            {
+                moves.Add(targetIndex);
+            }
+
+            // Check for en passant capture to the right
+            targetIndex = (currentRow + direction) * 8 + currentCol + 1;
+            if (targetIndex == enPassantIndex)
+            {
+                moves.Add(targetIndex);
+            }
+
+            return moves;
         }
+
 
         private static List<int> GetMovesForKnight(int index, int color, Square[] squares)
         {

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Code.UI
 {
-    public class GameSettings : MonoBehaviour
+    public class GameSettingsInspector : MonoBehaviour
     {
         [SerializeField]
         private BoardManager boardManager;

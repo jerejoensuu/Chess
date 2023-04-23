@@ -10,6 +10,7 @@ namespace Code
         // [SerializeField] private GameSettings gameSettings;
         private BoardManager _boardManager;
         private UIManager _uiManager;
+        private string _activeFenString;
         
         private void Awake()
         {
@@ -24,7 +25,12 @@ namespace Code
         
         public void LoadNewGame()
         {
-            _boardManager.SetupBoard(_uiManager.gameSettings.FenString);
+            _boardManager.SetupBoard(_uiManager.gameSettingsInspector.FenString);
+        }
+        
+        public void UpdateFenString(string fenString)
+        {
+            throw new NotImplementedException();
         }
     }
 }

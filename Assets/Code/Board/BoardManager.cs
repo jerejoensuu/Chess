@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Code.UI;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Code.Board
@@ -9,16 +11,24 @@ namespace Code.Board
         public UserInputs userInputs;
         public BoardBuilder boardBuilder;
         public UIManager uiManager;
+        public GameSettingsInspector gameSettingsInspector;
         [SerializeField] private GameObject piecePrefab;
         [SerializeField] private Sprite[] pieceSprites;
+
+        [InspectorLabel("Colors")] public Color lightColor;
+        public Color darkColor;
+        public Color pieceOriginColor;
+        public Color moveIndicatorColor;
+        public Color legalMoveColor;
         
         private Camera _mainCamera;
         
         [SerializeField] private float squareSize = 1f;
 
-        private Square[] _squares;
+        public Square[] squares;
 
         public GameObject cursor;
+        public GameObject heldPiece;
 
         private void Start()
         {
@@ -28,15 +38,15 @@ namespace Code.Board
         
         public void SetupBoard(string fenString = "default")
         {
-            _squares ??= boardBuilder.BuildBoard(fenString, squareSize);
+            squares = boardBuilder.BuildBoard(lightColor, darkColor,fenString, squareSize);
             try
             {
-                boardBuilder.SetPiecesFromFenString(fenString, ref _squares);
+                boardBuilder.SetPiecesFromFenString(fenString, ref squares);
             }
             catch (Exception)
             {
                 Debug.LogError("Invalid FEN string:");
-                boardBuilder.SetPiecesFromFenString("default", ref _squares);
+                boardBuilder.SetPiecesFromFenString("default", ref squares);
             }
             InstantiatePieces();
         }
@@ -72,12 +82,12 @@ namespace Code.Board
 
             int index = rank * 8 + file;
             
-            return _squares[index];
+            return squares[index];
         }
         
         private void InstantiatePieces()
         {
-            foreach (Square square in _squares)
+            foreach (Square square in squares)
             {
                 if (square.transform.childCount > 0)
                 {
@@ -96,11 +106,52 @@ namespace Code.Board
             }
         }
         
-        public void MovePieceToSquare(GameObject origin, GameObject target)
+        public void PickUpPiece(GameObject piece)
         {
-            Transform piece = origin.gameObject.transform.GetChild(0);
-            piece.parent = target.transform;
-            piece.localPosition = Vector3.zero;
+            heldPiece = piece;
+            heldPiece.transform.parent = cursor.transform;
+            heldPiece.transform.localPosition = Vector3.zero;
+        }
+        
+        public bool MovePieceTo(Square origin, Square target)
+        {
+            if (!Rules.IsMoveLegal(origin, target, squares)) return false;
+            
+            target.pieceValue = origin.pieceValue;
+            origin.pieceValue = 0;
+
+            if (target.transform.childCount > 0)
+            {
+                Destroy(target.transform.GetChild(0).gameObject);
+            }
+            
+            heldPiece.transform.parent = target.transform;
+            heldPiece.transform.localPosition = Vector3.zero;
+            heldPiece = null;
+            return true;
+        }
+        
+        public void ResetPieceToOrigin(Square origin)
+        {
+            heldPiece.transform.parent = origin.transform;
+            heldPiece.transform.localPosition = Vector3.zero;
+            heldPiece = null;
+        }
+        
+        public void ColorSquares(List<int> squareIndices, Color color)
+        {
+            foreach (int square in squareIndices)
+            {
+                squares[square].SetColor(color);
+            }
+        }
+        
+        public void ResetSquareColors()
+        {
+            foreach (Square square in squares)
+            {
+                square.ResetColor();
+            }
         }
     }
 }

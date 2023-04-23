@@ -10,36 +10,39 @@ namespace Code
 
         private Square _selectedSquare;
         private Square _targetSquare;
-        
-        
+
+
         private void OnMouseDown()
         {
             boardManager.CalculateCursorPosition();
             _selectedSquare = boardManager.GetSquareUnderCursor();
             if (_selectedSquare == null) return;
-            boardManager.MovePieceToSquare(_selectedSquare.gameObject, boardManager.cursor);
+            boardManager.PickUpPiece(_selectedSquare.transform.GetChild(0).gameObject);
+            boardManager.ColorSquares(Rules.GetMovesForPiece(_selectedSquare, boardManager.squares), boardManager.legalMoveColor);
         }
-        
+
         private void OnMouseUp()
         {
             boardManager.CalculateCursorPosition();
             if (_selectedSquare == null) return;
             _targetSquare = boardManager.GetSquareUnderCursor();
 
-            if (_targetSquare == null || _targetSquare == _selectedSquare)
+            if (_targetSquare == null || _targetSquare == _selectedSquare ||
+                !boardManager.MovePieceTo(_selectedSquare, _targetSquare))
             {
                 ResetCursor();
                 return;
             }
-            
-            boardManager.MovePieceToSquare(boardManager.cursor, _targetSquare.gameObject);
+
+            boardManager.ResetSquareColors();
         }
-        
+
         private void ResetCursor()
         {
             if (boardManager.cursor.transform.childCount == 0) return;
-            boardManager.MovePieceToSquare(boardManager.cursor, _selectedSquare.gameObject);
-            
+            boardManager.ResetPieceToOrigin(_selectedSquare);
+            boardManager.ResetSquareColors();
+
             _selectedSquare = null;
             _targetSquare = null;
         }

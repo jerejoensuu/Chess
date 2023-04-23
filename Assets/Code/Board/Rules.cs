@@ -1,0 +1,117 @@
+﻿using System;
+using System.Collections.Generic;
+using Code.Data;
+using UnityEngine;
+
+namespace Code.Board
+{
+    public class Rules : MonoBehaviour
+    {
+        public bool isWhiteTurn = true;
+        
+        public static bool IsMoveLegal(Square selectedSquare, Square targetSquare, Square[] squares)
+        {
+            List<int> moves = GetMovesForPiece(selectedSquare, squares);
+            return moves.Contains(targetSquare.index);
+
+            // int pieceValue = selectedSquare.pieceValue;
+            // int targetValue = targetSquare.pieceValue;
+            //
+            // // Check turn and piece color
+            // if (Piece.IsWhite(pieceValue) != isWhiteTurn) return false;
+
+        }
+
+        public static List<int> GetMovesForPiece(Square square, Square[] squares)
+        {
+            List<int> moves = new List<int>();
+            
+            int piece = square.pieceValue;
+            int index = square.index;
+
+            switch (Piece.GetType(piece))
+            {
+                case Piece.Pawn:
+                    moves = GetMovesForPawn(index, Piece.GetColor(piece), squares);
+                    break;
+                case Piece.Knight:
+                    moves = GetMovesForKnight(index, Piece.GetColor(piece), squares);
+                    break;
+                case Piece.Bishop:
+                    moves = GetMovesForBishop(index, Piece.GetColor(piece), squares);
+                    break;
+                case Piece.Rook:
+                    moves = GetMovesForRook(index, Piece.GetColor(piece), squares);
+                    break;
+                case Piece.Queen:
+                    moves = GetMovesForQueen(index, Piece.GetColor(piece), squares);
+                    break;
+                case Piece.King:
+                    moves = GetMovesForKing(index, Piece.GetColor(piece), squares);
+                    break;
+            }
+            
+            return moves;
+        }
+
+        private static List<int> GetMovesForPawn(int index, int color, Square[] squares)
+        {
+            return GetSlidingMoves(index, Piece.King | color, squares);
+        }
+        
+        private static List<int> GetMovesForKnight(int index, int color, Square[] squares)
+        {
+            throw new NotImplementedException();
+        }
+        
+        private static List<int> GetMovesForBishop(int index, int color, Square[] squares)
+        {
+            return GetSlidingMoves(index, Piece.Bishop | color, squares);
+        }
+        
+        private static List<int> GetMovesForRook(int index, int color, Square[] squares)
+        {
+            return GetSlidingMoves(index, Piece.Rook | color, squares);
+        }
+        
+        private static List<int> GetMovesForQueen(int index, int color, Square[] squares)
+        {
+            return GetSlidingMoves(index, Piece.Queen | color, squares);
+        }
+        
+        private static List<int> GetMovesForKing(int index, int color, Square[] squares)
+        {
+            return GetSlidingMoves(index, Piece.King | color, squares);
+        }
+        
+        private static List<int> GetSlidingMoves(int index, int piece, Square[] squares)
+        {
+            int[] offsets = {8, -8, 1, -1, 9, -9, 7, -7};
+            List<int> moves = new List<int>();
+            
+            int startingDirection = Piece.GetType(piece) == Piece.Bishop ? 4 : 0;
+            int endingDirection = Piece.GetType(piece) == Piece.Rook ? 4 : 8;
+            
+            for (int direction = startingDirection; direction < endingDirection; direction++)
+            {
+                for (int i = 0; i < PrecomputedData.NumSquaresToEdge[index][direction]; i++)
+                {
+                    int offset = offsets[direction] * (i + 1);
+                    int targetIndex = index + offset;
+                    
+                    int targetPiece = squares[targetIndex].pieceValue;
+                    
+                    if (targetPiece != 0 && Piece.GetColor(targetPiece) == Piece.GetColor(piece)) break;
+                    
+                    moves.Add(targetIndex);
+                    
+                    if (targetPiece != 0 && Piece.GetColor(targetPiece) != Piece.GetColor(piece)) break;
+
+                    if (Piece.GetType(piece) == Piece.King) break;
+                }
+            }
+            
+            return moves;
+        }
+    }
+}

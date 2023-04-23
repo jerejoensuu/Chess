@@ -7,13 +7,25 @@ namespace Code.Board
     {
         
         [SerializeField] private SpriteRenderer spriteRenderer;
-        
+        private Color _defaultColor;
+
         public int index; // The index of the square on the board, 0-63
         public int pieceValue; // The value of the piece on the square, refer to Piece.cs
 
         public void SetColor(Color color)
         {
             spriteRenderer.color = color;
+        }
+        
+        public void SetDefaultColor(Color color)
+        {
+            _defaultColor = color;
+            spriteRenderer.color = color;
+        }
+        
+        public void ResetColor()
+        {
+            spriteRenderer.color = _defaultColor;
         }
         
         public Vector2 GetCenter()

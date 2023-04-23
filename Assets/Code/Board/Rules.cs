@@ -8,7 +8,7 @@ namespace Code.Board
     public class Rules : MonoBehaviour
     {
         public bool isWhiteTurn = true;
-        
+
         public static bool IsMoveLegal(Square selectedSquare, Square targetSquare, Square[] squares)
         {
             List<int> moves = GetMovesForPiece(selectedSquare, squares);
@@ -19,13 +19,12 @@ namespace Code.Board
             //
             // // Check turn and piece color
             // if (Piece.IsWhite(pieceValue) != isWhiteTurn) return false;
-
         }
 
         public static List<int> GetMovesForPiece(Square square, Square[] squares)
         {
             List<int> moves = new List<int>();
-            
+
             int piece = square.pieceValue;
             int index = square.index;
 
@@ -50,7 +49,7 @@ namespace Code.Board
                     moves = GetMovesForKing(index, Piece.GetColor(piece), squares);
                     break;
             }
-            
+
             return moves;
         }
 
@@ -58,59 +57,83 @@ namespace Code.Board
         {
             return GetSlidingMoves(index, Piece.King | color, squares);
         }
-        
+
         private static List<int> GetMovesForKnight(int index, int color, Square[] squares)
         {
-            throw new NotImplementedException();
+            int[] rowOffsets = { -2, -1, 1, 2, 2, 1, -1, -2 };
+            int[] colOffsets = { 1, 2, 2, 1, -1, -2, -2, -1 };
+            List<int> moves = new List<int>();
+
+            int currentRow = index / 8;
+            int currentCol = index % 8;
+
+            for (int i = 0; i < 8; i++)
+            {
+                int newRow = currentRow + rowOffsets[i];
+                int newCol = currentCol + colOffsets[i];
+
+                if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8)
+                {
+                    int targetIndex = newRow * 8 + newCol;
+                    int targetPiece = squares[targetIndex].pieceValue;
+
+                    if (targetPiece == 0 || Piece.GetColor(targetPiece) != color)
+                    {
+                        moves.Add(targetIndex);
+                    }
+                }
+            }
+
+            return moves;
         }
-        
+
         private static List<int> GetMovesForBishop(int index, int color, Square[] squares)
         {
             return GetSlidingMoves(index, Piece.Bishop | color, squares);
         }
-        
+
         private static List<int> GetMovesForRook(int index, int color, Square[] squares)
         {
             return GetSlidingMoves(index, Piece.Rook | color, squares);
         }
-        
+
         private static List<int> GetMovesForQueen(int index, int color, Square[] squares)
         {
             return GetSlidingMoves(index, Piece.Queen | color, squares);
         }
-        
+
         private static List<int> GetMovesForKing(int index, int color, Square[] squares)
         {
             return GetSlidingMoves(index, Piece.King | color, squares);
         }
-        
+
         private static List<int> GetSlidingMoves(int index, int piece, Square[] squares)
         {
-            int[] offsets = {8, -8, 1, -1, 9, -9, 7, -7};
+            int[] offsets = { 8, -8, 1, -1, 9, -9, 7, -7 };
             List<int> moves = new List<int>();
-            
+
             int startingDirection = Piece.GetType(piece) == Piece.Bishop ? 4 : 0;
             int endingDirection = Piece.GetType(piece) == Piece.Rook ? 4 : 8;
-            
+
             for (int direction = startingDirection; direction < endingDirection; direction++)
             {
                 for (int i = 0; i < PrecomputedData.NumSquaresToEdge[index][direction]; i++)
                 {
                     int offset = offsets[direction] * (i + 1);
                     int targetIndex = index + offset;
-                    
+
                     int targetPiece = squares[targetIndex].pieceValue;
-                    
+
                     if (targetPiece != 0 && Piece.GetColor(targetPiece) == Piece.GetColor(piece)) break;
-                    
+
                     moves.Add(targetIndex);
-                    
+
                     if (targetPiece != 0 && Piece.GetColor(targetPiece) != Piece.GetColor(piece)) break;
 
                     if (Piece.GetType(piece) == Piece.King) break;
                 }
             }
-            
+
             return moves;
         }
     }

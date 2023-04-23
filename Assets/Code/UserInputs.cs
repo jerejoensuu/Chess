@@ -17,8 +17,9 @@ namespace Code
             boardManager.CalculateCursorPosition();
             _selectedSquare = boardManager.GetSquareUnderCursor();
             if (_selectedSquare == null) return;
-            boardManager.PickUpPiece(_selectedSquare.transform.GetChild(0).gameObject);
-            boardManager.ColorSquares(Rules.GetMovesForPiece(_selectedSquare, boardManager.squares), boardManager.legalMoveColor);
+            boardManager.PickUpPiece(_selectedSquare.GetPiece());
+            boardManager.SetSquareMarks(Rules.GetMovesForPiece(_selectedSquare, boardManager.squares));
+            boardManager.ColorSquare(_selectedSquare.index, boardManager.pieceOriginColor);
         }
 
         private void OnMouseUp()
@@ -31,10 +32,10 @@ namespace Code
                 !boardManager.MovePieceTo(_selectedSquare, _targetSquare))
             {
                 ResetCursor();
-                return;
             }
 
             boardManager.ResetSquareColors();
+            boardManager.ResetSquareMarks();
         }
 
         private void ResetCursor()

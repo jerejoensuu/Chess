@@ -1179,6 +1179,7 @@ MonoBehaviour:
   - {fileID: 1029665755, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
   lightColor: {r: 0.93333334, g: 0.93333334, b: 0.8235294, a: 1}
   darkColor: {r: 0.4627451, g: 0.5882353, b: 0.3372549, a: 1}
+  pieceOriginColor: {r: 0.96862745, g: 0.96862745, b: 0.4117647, a: 1}
   moveIndicatorColor: {r: 0.73333335, g: 0.79607844, b: 0.16862746, a: 1}
   legalMoveColor: {r: 0.49803922, g: 0.79607844, b: 0.16862746, a: 1}
   squareSize: 1

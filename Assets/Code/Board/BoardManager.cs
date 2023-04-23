@@ -32,6 +32,8 @@ namespace Code.Board
         
         private Square _highlightedSquare;
 
+        public int EnPassantIndex { get; private set; } = -1;
+
         private void Start()
         {
             _mainCamera = Camera.main;
@@ -124,20 +126,40 @@ namespace Code.Board
 
         public bool MovePieceTo(Square origin, Square target)
         {
-            if (!Rules.IsMoveLegal(origin, target, squares)) return false;
+            if (!Rules.IsMoveLegal(origin, target, squares, EnPassantIndex)) return false;
 
-            target.pieceValue = origin.pieceValue;
-            origin.pieceValue = 0;
+            // En passant
+            if (Piece.GetType(origin.pieceValue) == Piece.Pawn && Math.Abs(target.index - origin.index) == 16)
+            {
+                EnPassantIndex = origin.index + (Piece.GetColor(origin.pieceValue) == Piece.White ? 8 : -8);
+            }
+            else
+            {
+                if (target.index == EnPassantIndex)
+                {
+                    CapturePieceOn(squares[target.index + (Piece.GetColor(origin.pieceValue) == Piece.White ? -8 : 8)]);
+                }
+                EnPassantIndex = -1;
+            }
 
             if (target.GetPieceHolderTransform().childCount > 0)
             {
-                Destroy(target.GetPiece().gameObject);
+                CapturePieceOn(target);
             }
+            
+            target.pieceValue = origin.pieceValue;
+            origin.pieceValue = 0;
 
             heldPiece.transform.parent = target.GetPieceHolderTransform();
             heldPiece.transform.localPosition = Vector3.zero;
             heldPiece = null;
             return true;
+            
+            void CapturePieceOn(Square pieceSquare)
+            {
+                Destroy(pieceSquare.GetPiece().gameObject);
+                pieceSquare.pieceValue = 0;
+            }
         }
 
         public void ResetPieceToOrigin(Square origin)

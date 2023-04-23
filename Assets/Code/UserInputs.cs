@@ -16,9 +16,9 @@ namespace Code
         {
             boardManager.CalculateCursorPosition();
             _selectedSquare = boardManager.GetSquareUnderCursor();
-            if (_selectedSquare == null) return;
+            if (_selectedSquare == null || _selectedSquare.pieceValue == 0) return;
             boardManager.PickUpPiece(_selectedSquare.GetPiece());
-            boardManager.SetSquareMarks(Rules.GetMovesForPiece(_selectedSquare, boardManager.squares));
+            boardManager.SetSquareMarks(Rules.GetMovesForPiece(_selectedSquare, boardManager.squares, boardManager.EnPassantIndex));
             boardManager.ColorSquare(_selectedSquare.index, boardManager.pieceOriginColor);
         }
 

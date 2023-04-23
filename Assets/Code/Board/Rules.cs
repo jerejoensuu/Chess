@@ -9,19 +9,13 @@ namespace Code.Board
     {
         public bool isWhiteTurn = true;
 
-        public static bool IsMoveLegal(Square selectedSquare, Square targetSquare, Square[] squares)
+        public static bool IsMoveLegal(Square selectedSquare, Square targetSquare, Square[] squares, int enPassantIndex = -1)
         {
-            List<int> moves = GetMovesForPiece(selectedSquare, squares);
+            List<int> moves = GetMovesForPiece(selectedSquare, squares, enPassantIndex);
             return moves.Contains(targetSquare.index);
-
-            // int pieceValue = selectedSquare.pieceValue;
-            // int targetValue = targetSquare.pieceValue;
-            //
-            // // Check turn and piece color
-            // if (Piece.IsWhite(pieceValue) != isWhiteTurn) return false;
         }
 
-        public static List<int> GetMovesForPiece(Square square, Square[] squares)
+        public static List<int> GetMovesForPiece(Square square, Square[] squares, int enPassantIndex = -1)
         {
             List<int> moves = new List<int>();
 
@@ -31,7 +25,7 @@ namespace Code.Board
             switch (Piece.GetType(piece))
             {
                 case Piece.Pawn:
-                    moves = GetMovesForPawn(index, Piece.GetColor(piece), squares);
+                    moves = GetMovesForPawn(index, Piece.GetColor(piece), squares, enPassantIndex);
                     break;
                 case Piece.Knight:
                     moves = GetMovesForKnight(index, Piece.GetColor(piece), squares);

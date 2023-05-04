@@ -38,6 +38,7 @@ namespace Code.Board
             List<int> moves = new List<int>();
 
             int piece = square.pieceValue;
+            if (_color != (_fenString.WhiteToMove ? Piece.White : Piece.Black)) return moves;
 
             switch (Piece.GetType(piece))
             {

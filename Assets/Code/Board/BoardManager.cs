@@ -188,6 +188,8 @@ namespace Code.Board
             heldPiece.transform.parent = target.GetPieceHolderTransform();
             heldPiece.transform.localPosition = Vector3.zero;
             heldPiece = null;
+            
+            gameManager.FenString.SetWhiteToMove(!gameManager.FenString.WhiteToMove);
             return true;
             
             void CapturePieceOn(Square pieceSquare)

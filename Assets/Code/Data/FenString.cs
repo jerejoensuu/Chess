@@ -52,6 +52,12 @@ namespace Code.Data
             return rank * 8 + file;
         }
         
+        public void SetWhiteToMove(bool whiteToMove)
+        {
+            WhiteToMove = whiteToMove;
+            UpdateFenString();
+        }
+        
         public void SetEnPassantIndex(int index)
         {
             EnPassantIndex = index;

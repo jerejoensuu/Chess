@@ -1111,7 +1111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f13c156338b44c50b2a5be215991cd7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameSettings: {fileID: 1044379828}
+  gameSettingsInspector: {fileID: 0}
   notationText: {fileID: 1715844503}
 --- !u!1 &1282010922
 GameObject:
@@ -1162,6 +1162,7 @@ MonoBehaviour:
   userInputs: {fileID: 1282010926}
   boardBuilder: {fileID: 1282010927}
   uiManager: {fileID: 1240465689}
+  gameSettingsInspector: {fileID: 0}
   piecePrefab: {fileID: 7783395455909470511, guid: e6827d56e65c7134a8ab6c36627298dc, type: 3}
   pieceSprites:
   - {fileID: 2100530673, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
@@ -1176,8 +1177,15 @@ MonoBehaviour:
   - {fileID: 455777102, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
   - {fileID: 607601041, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
   - {fileID: 1029665755, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
+  lightColor: {r: 0.93333334, g: 0.93333334, b: 0.8235294, a: 1}
+  darkColor: {r: 0.4627451, g: 0.5882353, b: 0.3372549, a: 1}
+  pieceOriginColor: {r: 0.96862745, g: 0.96862745, b: 0.4117647, a: 1}
+  moveIndicatorColor: {r: 0.73333335, g: 0.79607844, b: 0.16862746, a: 1}
+  legalMoveColor: {r: 0.49803922, g: 0.79607844, b: 0.16862746, a: 1}
   squareSize: 1
+  squares: []
   cursor: {fileID: 0}
+  heldPiece: {fileID: 0}
 --- !u!114 &1282010926
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1204,8 +1212,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   squarePrefab: {fileID: 3570150717093903602, guid: 282904ddb826cbb41b8b4f464856de71, type: 3}
-  lightColor: {r: 0.93333334, g: 0.93333334, b: 0.8235294, a: 1}
-  darkColor: {r: 0.4627451, g: 0.5882353, b: 0.3372549, a: 1}
 --- !u!1 &1408041785
 GameObject:
   m_ObjectHideFlags: 0

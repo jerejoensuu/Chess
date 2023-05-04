@@ -5,7 +5,7 @@ namespace Code.UI
 {
     public class UIManager : MonoBehaviour
     {
-        public GameSettings gameSettings;
+        public GameSettingsInspector gameSettingsInspector;
         [SerializeField] private TextMeshProUGUI notationText;
         
         public void SetNotationText(string notation)

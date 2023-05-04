@@ -7,10 +7,7 @@ namespace Code.Board
     {
         [SerializeField] private GameObject squarePrefab;
 
-        [SerializeField] private Color lightColor;
-        [SerializeField] private Color darkColor;
-
-        public Square[] BuildBoard(string fenString = "default", float squareSize = 1f)
+        public Square[] BuildBoard(Color darkColor, Color lightColor, string fenString = "default", float squareSize = 1f)
         {
             GameObject tiles = new GameObject("Tiles");
             tiles.transform.parent = transform;
@@ -28,7 +25,7 @@ namespace Code.Board
                 square.name = squareScript.GetNotation();
                 
                 bool isDark = (i / 8 + i % 8) % 2 == 0;
-                squareScript.SetColor(isDark ? darkColor : lightColor);
+                squareScript.SetDefaultColor(isDark ? darkColor : lightColor);
                 
                 squares[i] = squareScript;
             }

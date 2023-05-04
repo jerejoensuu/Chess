@@ -1,5 +1,6 @@
 ﻿using System;
 using Code.Board;
+using Code.Data;
 using Code.UI;
 using UnityEngine;
 
@@ -10,11 +11,15 @@ namespace Code
         // [SerializeField] private GameSettings gameSettings;
         private BoardManager _boardManager;
         private UIManager _uiManager;
+        public FenString FenString { get; private set; }
         
         private void Awake()
         {
             _boardManager ??= FindObjectOfType<BoardManager>();
+            _boardManager.gameManager ??= this;
+            
             _uiManager ??= FindObjectOfType<UIManager>();
+            FenString ??= new FenString();
         }
 
         private void Start()
@@ -24,7 +29,12 @@ namespace Code
         
         public void LoadNewGame()
         {
-            _boardManager.SetupBoard(_uiManager.gameSettings.FenString);
+            _boardManager.SetupBoard(_uiManager.gameSettingsInspector.FenString);
+        }
+        
+        public void UpdateFenString(string fenString)
+        {
+            throw new NotImplementedException();
         }
     }
 }

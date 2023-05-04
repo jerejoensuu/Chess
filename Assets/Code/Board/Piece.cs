@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Code.Board
 {
@@ -45,6 +46,11 @@ namespace Code.Board
                 'K' => White | King,
                 _ => None
             };
+        }
+        
+        public static bool IsWhite(int piece)
+        {
+            return GetColor(piece) == White;
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Code
             _selectedSquare = boardManager.GetSquareUnderCursor();
             if (_selectedSquare == null || _selectedSquare.pieceValue == 0) return;
             boardManager.PickUpPiece(_selectedSquare.GetPiece());
-            boardManager.SetSquareMarks(Rules.GetMovesForPiece(_selectedSquare, boardManager.squares, boardManager.EnPassantIndex));
+            boardManager.SetSquareMarks(Rules.GetMovesForPiece(_selectedSquare, boardManager.squares, boardManager.gameManager.FenString));
             boardManager.ColorSquare(_selectedSquare.index, boardManager.pieceOriginColor);
         }
 

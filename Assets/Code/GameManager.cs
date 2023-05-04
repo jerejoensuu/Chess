@@ -1,5 +1,6 @@
 ﻿using System;
 using Code.Board;
+using Code.Data;
 using Code.UI;
 using UnityEngine;
 
@@ -10,12 +11,15 @@ namespace Code
         // [SerializeField] private GameSettings gameSettings;
         private BoardManager _boardManager;
         private UIManager _uiManager;
-        private string _activeFenString;
+        public FenString FenString { get; private set; }
         
         private void Awake()
         {
             _boardManager ??= FindObjectOfType<BoardManager>();
+            _boardManager.gameManager ??= this;
+            
             _uiManager ??= FindObjectOfType<UIManager>();
+            FenString ??= new FenString();
         }
 
         private void Start()

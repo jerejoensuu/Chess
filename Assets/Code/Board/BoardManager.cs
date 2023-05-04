@@ -8,20 +8,21 @@ namespace Code.Board
 {
     public class BoardManager : MonoBehaviour
     {
+        [InspectorLabel("References")] 
+        public GameManager gameManager;
         public UserInputs userInputs;
         public BoardBuilder boardBuilder;
         public UIManager uiManager;
         public GameSettingsInspector gameSettingsInspector;
         [SerializeField] private GameObject piecePrefab;
         [SerializeField] private Sprite[] pieceSprites;
+        private Camera _mainCamera;
 
         [InspectorLabel("Colors")] public Color lightColor;
         public Color darkColor;
         public Color pieceOriginColor;
         public Color moveIndicatorColor;
         public Color legalMoveColor;
-
-        private Camera _mainCamera;
 
         [SerializeField] private float squareSize = 1f;
 
@@ -31,8 +32,8 @@ namespace Code.Board
         public GameObject heldPiece;
         
         private Square _highlightedSquare;
-
-        public int EnPassantIndex { get; private set; } = -1;
+        
+        
 
         private void Start()
         {
@@ -126,25 +127,59 @@ namespace Code.Board
 
         public bool MovePieceTo(Square origin, Square target)
         {
-            if (!Rules.IsMoveLegal(origin, target, squares, EnPassantIndex)) return false;
+            if (!Rules.IsMoveLegal(origin, target, squares, gameManager.FenString)) return false;
 
             // En passant
             if (Piece.GetType(origin.pieceValue) == Piece.Pawn && Math.Abs(target.index - origin.index) == 16)
             {
-                EnPassantIndex = origin.index + (Piece.GetColor(origin.pieceValue) == Piece.White ? 8 : -8);
+                gameManager.FenString.SetEnPassantIndex(origin.index + (Piece.GetColor(origin.pieceValue) == Piece.White ? 8 : -8));
             }
-            else
+            else if (Piece.GetType(origin.pieceValue) == Piece.Pawn)
             {
-                if (target.index == EnPassantIndex)
+                if (target.index == gameManager.FenString.EnPassantIndex)
                 {
                     CapturePieceOn(squares[target.index + (Piece.GetColor(origin.pieceValue) == Piece.White ? -8 : 8)]);
                 }
-                EnPassantIndex = -1;
+                gameManager.FenString.SetEnPassantIndex(-1);
             }
 
+            // Capturing
             if (target.GetPieceHolderTransform().childCount > 0)
             {
                 CapturePieceOn(target);
+            }
+            
+            // Castling
+            if (Piece.GetType(origin.pieceValue) == Piece.King)
+            {
+                if (Piece.GetColor(origin.pieceValue) == Piece.White)
+                {
+                    // gameManager.FenString.SetWhiteCanCastleShort(false);
+                    // gameManager.FenString.SetWhiteCanCastleLong(false);
+                    
+                    if (target.index == 6)
+                    {
+                        StaticMovePieceTo(squares[7], squares[5]);
+                    }
+                    else if (target.index == 2)
+                    {
+                        StaticMovePieceTo(squares[0], squares[3]);
+                    }
+                }
+                else
+                {
+                    // gameManager.FenString.SetBlackCanCastleShort(false);
+                    // gameManager.FenString.SetBlackCanCastleLong(false);
+                    
+                    if (target.index == 62)
+                    {
+                        StaticMovePieceTo(squares[63], squares[61]);
+                    }
+                    else if (target.index == 58)
+                    {
+                        StaticMovePieceTo(squares[56], squares[59]);
+                    }
+                }
             }
             
             target.pieceValue = origin.pieceValue;
@@ -160,6 +195,16 @@ namespace Code.Board
                 Destroy(pieceSquare.GetPiece().gameObject);
                 pieceSquare.pieceValue = 0;
             }
+        }
+        
+        private void StaticMovePieceTo(Square origin, Square target)
+        {
+            target.pieceValue = origin.pieceValue;
+            origin.pieceValue = 0;
+            
+            GameObject movedPiece = origin.GetPiece().gameObject;
+            movedPiece.transform.parent = target.GetPieceHolderTransform();
+            movedPiece.transform.localPosition = Vector3.zero;
         }
 
         public void ResetPieceToOrigin(Square origin)

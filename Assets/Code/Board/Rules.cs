@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Code.Data;
 using UnityEngine;
 
@@ -8,36 +9,47 @@ namespace Code.Board
     public static class Rules
     {
         private static int _index;
-        private static Square[] _squares;
+        private static int[] _pieceValues;
         private static FenString _fenString;
         private static int _color;
         
         public static bool IsMoveLegal(Square selectedSquare, Square targetSquare, Square[] squares, FenString fenString)
         {
             _index = selectedSquare.index;
-            _squares = squares;
+            _pieceValues = CopyPieceValuesFromSquares(squares);
             _fenString = fenString;
             _color = Piece.GetColor(selectedSquare.pieceValue);
             
-            List<int> moves = GetMovesForPiece(selectedSquare);
+            List<int> moves = GetMovesForPiece(selectedSquare.pieceValue);
             return moves.Contains(targetSquare.index);
         }
 
         public static List<int> GetMovesForPiece(Square square, Square[] squares, FenString fenString)
         {
             _index = square.index;
-            _squares = squares;
+            _pieceValues = CopyPieceValuesFromSquares(squares);
             _fenString = fenString;
             _color = Piece.GetColor(square.pieceValue);
             
-            return GetMovesForPiece(square);
+            return GetMovesForPiece(square.pieceValue);
+        }
+        
+        public static int[] CopyPieceValuesFromSquares(Square[] squares)
+        {
+            int[] pieceValues = new int[squares.Length];
+            for (int i = 0; i < squares.Length; i++)
+            {
+                pieceValues[i] = squares[i].pieceValue;
+            }
+
+            return pieceValues;
         }
 
-        public static List<int> GetMovesForPiece(Square square)
+        public static List<int> GetMovesForPiece(int pieceValue)
         {
             List<int> moves = new List<int>();
 
-            int piece = square.pieceValue;
+            int piece = pieceValue;
             if (_color != (_fenString.WhiteToMove ? Piece.White : Piece.Black)) return moves;
 
             switch (Piece.GetType(piece))
@@ -76,7 +88,7 @@ namespace Code.Board
 
             // Check if the pawn can move forward one square
             int targetIndex = (currentRow + direction) * 8 + currentCol;
-            if (targetIndex >= 0 && targetIndex < 64 && _squares[targetIndex].pieceValue == 0)
+            if (targetIndex >= 0 && targetIndex < 64 && _pieceValues[targetIndex] == 0)
             {
                 moves.Add(targetIndex);
             }
@@ -85,8 +97,8 @@ namespace Code.Board
             if ((currentRow == 1 && _color == Piece.White) || (currentRow == 6 && _color == Piece.Black))
             {
                 targetIndex = (currentRow + 2 * direction) * 8 + currentCol;
-                if (_squares[targetIndex].pieceValue == 0 &&
-                    _squares[(currentRow + direction) * 8 + currentCol].pieceValue == 0)
+                if (_pieceValues[targetIndex] == 0 &&
+                    _pieceValues[(currentRow + direction) * 8 + currentCol] == 0)
                 {
                     moves.Add(targetIndex);
                 }
@@ -94,16 +106,18 @@ namespace Code.Board
 
             // Check if the pawn can capture diagonally to the left
             targetIndex = (currentRow + direction) * 8 + currentCol - 1;
-            if (targetIndex >= 0 && targetIndex < 64 && _squares[targetIndex].pieceValue != 0 &&
-                Piece.GetColor(_squares[targetIndex].pieceValue) != _color)
+            if (targetIndex is >= 0 and < 64
+                && currentCol > 0 && _pieceValues[targetIndex] != 0
+                && Piece.GetColor(_pieceValues[targetIndex]) != _color)
             {
                 moves.Add(targetIndex);
             }
 
             // Check if the pawn can capture diagonally to the right
             targetIndex = (currentRow + direction) * 8 + currentCol + 1;
-            if (targetIndex >= 0 && targetIndex < 64 && _squares[targetIndex].pieceValue != 0 &&
-                Piece.GetColor(_squares[targetIndex].pieceValue) != _color)
+            if (targetIndex is >= 0 and < 64
+                && currentCol < 7 && _pieceValues[targetIndex] != 0
+                && Piece.GetColor(_pieceValues[targetIndex]) != _color)
             {
                 moves.Add(targetIndex);
             }
@@ -143,7 +157,7 @@ namespace Code.Board
                 if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8)
                 {
                     int targetIndex = newRow * 8 + newCol;
-                    int targetPiece = _squares[targetIndex].pieceValue;
+                    int targetPiece = _pieceValues[targetIndex];
 
                     if (targetPiece == 0 || Piece.GetColor(targetPiece) != _color)
                     {
@@ -190,7 +204,7 @@ namespace Code.Board
                     int offset = offsets[direction] * (i + 1);
                     int targetIndex = _index + offset;
 
-                    int targetPiece = _squares[targetIndex].pieceValue;
+                    int targetPiece = _pieceValues[targetIndex];
 
                     if (targetPiece != 0 && Piece.GetColor(targetPiece) == Piece.GetColor(piece)) break;
 
@@ -207,24 +221,24 @@ namespace Code.Board
             {
                 if (_color == Piece.White)
                 {
-                    if (_fenString.WhiteCanCastleKingside && _squares[5].pieceValue == 0 && _squares[6].pieceValue == 0)
+                    if (_fenString.WhiteCanCastleKingside && _pieceValues[5] == 0 && _pieceValues[6] == 0)
                     {
                         moves.Add(6);
                     }
 
-                    if (_fenString.WhiteCanCastleQueenside && _squares[1].pieceValue == 0 && _squares[2].pieceValue == 0 && _squares[3].pieceValue == 0)
+                    if (_fenString.WhiteCanCastleQueenside && _pieceValues[1] == 0 && _pieceValues[2] == 0 && _pieceValues[3] == 0)
                     {
                         moves.Add(2);
                     }
                 }
                 else
                 {
-                    if (_fenString.BlackCanCastleKingside && _squares[61].pieceValue == 0 && _squares[62].pieceValue == 0)
+                    if (_fenString.BlackCanCastleKingside && _pieceValues[61] == 0 && _pieceValues[62] == 0)
                     {
                         moves.Add(62);
                     }
 
-                    if (_fenString.BlackCanCastleQueenside && _squares[57].pieceValue == 0 && _squares[58].pieceValue == 0 && _squares[59].pieceValue == 0)
+                    if (_fenString.BlackCanCastleQueenside && _pieceValues[57] == 0 && _pieceValues[58] == 0 && _pieceValues[59] == 0)
                     {
                         moves.Add(58);
                     }

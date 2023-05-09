@@ -8,13 +8,19 @@ namespace Code.Board
         [SerializeField] private GameObject pieceHolder;
         [SerializeField] private SpriteRenderer spriteRenderer;
         private Color _defaultColor;
-        
+
         [SerializeField] private GameObject highlight;
         [SerializeField] private GameObject moveMarker;
         [SerializeField] private GameObject captureMarker;
 
         public int index; // The index of the square on the board, 0-63
         public int pieceValue; // The value of the piece on the square, refer to Piece.cs
+
+        public Square(int index, int pieceValue)
+        {
+            this.index = index;
+            this.pieceValue = pieceValue;
+        }
 
         public void SetColor(Color color)
         {
@@ -41,18 +47,26 @@ namespace Code.Board
         {
             return pieceHolder.transform.childCount == 0 ? null : pieceHolder.transform.GetChild(0).gameObject;
         }
-        
+
         public void SetHighlight(bool active)
         {
             highlight.SetActive(active);
         }
-        
+
         public void SetMarkerCircle(bool active)
         {
-            if (pieceValue == 0)
-                moveMarker.SetActive(active);
+            if (active)
+            {
+                if (pieceValue == 0)
+                    moveMarker.SetActive(true);
+                else
+                    captureMarker.SetActive(true);
+            }
             else
-                captureMarker.SetActive(active);
+            {
+                moveMarker.SetActive(false);
+                captureMarker.SetActive(false);
+            }
         }
 
         public Vector2 GetCenter()

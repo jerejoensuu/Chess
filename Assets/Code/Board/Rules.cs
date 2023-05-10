@@ -47,7 +47,7 @@ namespace Code.Board
             return filteredMoves;
         }
 
-        private static bool IsKingInCheck(int[] pieceValues, FenString fenString, int color)
+        public static bool IsKingInCheck(int[] pieceValues, FenString fenString, int color)
         {
             int kingIndex = GetKingIndex(pieceValues, color);
             int opponentColor = color == Piece.White ? Piece.Black : Piece.White;
@@ -55,7 +55,13 @@ namespace Code.Board
             return opponentMoves.Contains(kingIndex);
         }
         
-        private static List<int> GetMovesForColor(int[] pieceValues, FenString fenString, int color)
+        public static bool IsKingInMate(int[] pieceValues, FenString fenString, int color)
+        {
+            List<int> moves = GetMovesForColor(pieceValues, fenString, color, true);
+            return moves.Count == 0 && IsKingInCheck(pieceValues, fenString, color);
+        }
+        
+        private static List<int> GetMovesForColor(int[] pieceValues, FenString fenString, int color, bool filterForCheck = false)
         {
             List<int> moves = new List<int>();
 
@@ -63,7 +69,9 @@ namespace Code.Board
             {
                 if ((pieceValues[i] & color) == color)
                 {
-                    moves.AddRange(GetMovesForPiece(pieceValues[i], i, pieceValues, fenString));
+                    List<int> m = GetMovesForPiece(pieceValues[i], i, pieceValues, fenString);
+                    if (filterForCheck) m = FilterMovesForCheck(pieceValues[i], i, m, pieceValues, fenString);
+                    moves.AddRange(m);
                 }
             }
 
@@ -253,7 +261,7 @@ namespace Code.Board
             return moves;
         }
 
-        private static int[] CopyPieceValuesFromSquares(Square[] squares)
+        public static int[] CopyPieceValuesFromSquares(Square[] squares)
         {
             int[] pieceValues = new int[squares.Length];
             for (int i = 0; i < squares.Length; i++)

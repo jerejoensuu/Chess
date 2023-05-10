@@ -188,6 +188,17 @@ namespace Code.Board
             heldPiece.transform.parent = target.GetPieceHolderTransform();
             heldPiece.transform.localPosition = Vector3.zero;
             heldPiece = null;
+                
+            int opponentColor = Piece.GetColor(target.pieceValue) == Piece.White ? Piece.Black : Piece.White;
+            int[] pieceValues = Rules.CopyPieceValuesFromSquares(squares);
+            if (Rules.IsKingInMate(pieceValues, gameManager.FenString, opponentColor))
+            {
+                Debug.Log("Checkmate!");
+            }
+            else if (Rules.IsKingInCheck(pieceValues, gameManager.FenString, opponentColor))
+            {
+                Debug.Log("Check!");
+            }
             
             gameManager.FenString.SetWhiteToMove(!gameManager.FenString.WhiteToMove);
             return true;

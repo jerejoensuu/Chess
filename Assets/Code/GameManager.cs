@@ -13,6 +13,8 @@ namespace Code
         private UIManager _uiManager;
         public FenString FenString { get; private set; }
         
+        public AI.AI ai;
+        
         private void Awake()
         {
             _boardManager ??= FindObjectOfType<BoardManager>();
@@ -20,6 +22,8 @@ namespace Code
             
             _uiManager ??= FindObjectOfType<UIManager>();
             FenString ??= new FenString();
+            
+            ai ??= new AI.PseudoSmartAIv1();
         }
 
         private void Start()
@@ -35,6 +39,16 @@ namespace Code
         public void UpdateFenString(string fenString)
         {
             throw new NotImplementedException();
+        }
+        
+        public void UnpauseGame()
+        {
+            _boardManager.Paused = false;
+        }
+        
+        public void EnableAutoPlay(bool enable)
+        {
+            _boardManager.AutoPlay = enable;
         }
     }
 }

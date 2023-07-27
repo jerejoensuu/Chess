@@ -74,22 +74,72 @@ namespace Code.Data
 
         public void SetWhiteCanCastleShort(bool b)
         {
-            throw new System.NotImplementedException();
+            if (b)
+            {
+                // TODO: Implement
+                throw new System.NotImplementedException();
+            }
+            else
+            {
+                CastlingRights = CastlingRights.Replace("K", "");
+            }
         }
         
         public void SetWhiteCanCastleLong(bool b)
         {
-            throw new System.NotImplementedException();
+            if (b)
+            {
+                // TODO: Implement
+                throw new System.NotImplementedException();
+            }
+            else
+            {
+                CastlingRights = CastlingRights.Replace("Q", "");
+            }
         }
         
         public void SetBlackCanCastleShort(bool b)
         {
-            throw new System.NotImplementedException();
+            if (b)
+            {
+                // TODO: Implement
+                throw new System.NotImplementedException();
+            }
+            else
+            {
+                CastlingRights = CastlingRights.Replace("k", "");
+            }
         }
         
         public void SetBlackCanCastleLong(bool b)
         {
-            throw new System.NotImplementedException();
+            if (b)
+            {
+                // TODO: Implement
+                throw new System.NotImplementedException();
+            }
+            else
+            {
+                CastlingRights = CastlingRights.Replace("q", "");
+            }
+        }
+
+        public void IncrementHalfmoveClock()
+        {
+            HalfmoveClock++;
+            UpdateFenString();
+        }
+        
+        public void ResetHalfmoveClock()
+        {
+            HalfmoveClock = 0;
+            UpdateFenString();
+        }
+        
+        public void IncrementFullmoveNumber()
+        {
+            FullmoveNumber++;
+            UpdateFenString();
         }
     }
 }

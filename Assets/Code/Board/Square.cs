@@ -105,9 +105,14 @@ namespace Code.Board
 
         public string GetNotation()
         {
+            return GetNotationForIndex(index);
+        }
+        
+        public static string GetNotationForIndex(int index)
+        {
             int fileIndex = index % 8;
             int rankIndex = index / 8;
-
+            
             string file = fileIndex switch
             {
                 0 => "A",
@@ -120,33 +125,10 @@ namespace Code.Board
                 7 => "H",
                 _ => ""
             };
-
+            
             string rank = (rankIndex + 1).ToString();
-
+            
             return $"{file}{rank}";
         }
-
-        // public string GetNotationForIndex(int index)
-        // {
-        //     int fileIndex = index % 8;
-        //     int rankIndex = index / 8;
-        //     
-        //     string file = fileIndex switch
-        //     {
-        //         0 => "h",
-        //         1 => "g",
-        //         2 => "f",
-        //         3 => "e",
-        //         4 => "d",
-        //         5 => "c",
-        //         6 => "b",
-        //         7 => "a",
-        //         _ => ""
-        //     };
-        //     
-        //     string rank = (8 - rankIndex).ToString();
-        //     
-        //     return $"{file}{rank}";
-        // }
     }
 }

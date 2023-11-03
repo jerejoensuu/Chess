@@ -52,5 +52,33 @@ namespace Code.Board
         {
             return GetColor(piece) == White;
         }
+        
+        public static string GetPieceNotation(int piece)
+        {
+            string notation = "";
+            switch (GetType(piece))
+            {
+                case Pawn:
+                    notation += "P";
+                    break;
+                case Knight:
+                    notation += "N";
+                    break;
+                case Bishop:
+                    notation += "B";
+                    break;
+                case Rook:
+                    notation += "R";
+                    break;
+                case Queen:
+                    notation += "Q";
+                    break;
+                case King:
+                    notation += "K";
+                    break;
+            }
+
+            return IsWhite(piece) ? notation : notation.ToLower();
+        }
     }
 }

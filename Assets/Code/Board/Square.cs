@@ -39,16 +39,6 @@ namespace Code.Board
             spriteRenderer.color = _defaultColor;
         }
 
-        // public Transform GetPieceHolderTransform()
-        // {
-        //     return pieceHolder.transform;
-        // }
-
-        public GameObject GetPiece()
-        {
-            return pieceHolder.transform.childCount == 0 ? null : pieceHolder.transform.GetChild(0).gameObject;
-        }
-
         public void SetHighlight(bool active)
         {
             highlight.SetActive(active);
@@ -155,7 +145,6 @@ namespace Code.Board
             Sprite newSprite = assetLib.pieceSprites[spriteIndex];
 
             pieceSpriteRenderer.sprite = newSprite;
-            // pieceObject.name = newSprite.name;
         }
     }
 }

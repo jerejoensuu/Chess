@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Code.AI;
+using Code.Data;
 using Code.UI;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -16,6 +16,7 @@ namespace Code.Board
         public UIManager uiManager;
         public GameSettingsInspector gameSettingsInspector;
         [SerializeField] private GameObject piecePrefab;
+        [SerializeField] private AssetLib assetLib;
         private Camera _mainCamera;
 
         [InspectorLabel("Colors")] public Color lightColor;
@@ -30,7 +31,8 @@ namespace Code.Board
         public Square[] squares;
 
         public GameObject cursor;
-        public GameObject heldPiece;
+        public SpriteRenderer heldPieceSpriteRenderer;
+        public int heldPieceIndex = -1;
 
         private Square _highlightedSquare;
 
@@ -45,7 +47,11 @@ namespace Code.Board
         private void Start()
         {
             _mainCamera = Camera.main;
+            
             cursor = new GameObject("Cursor");
+            cursor.AddComponent<SpriteRenderer>();
+            cursor.transform.localScale = 0.31f * Vector3.one;
+            heldPieceSpriteRenderer = cursor.GetComponent<SpriteRenderer>();
         }
 
         public void SetupBoard(string fenString = "default")
@@ -110,7 +116,6 @@ namespace Code.Board
             string playerColor = color == Piece.White ? "White" : "Black";
             Debug.Log(playerColor + " is moving " + originSquare.GetNotation() + " to " + targetSquare.GetNotation());
 
-            PickUpPiece(originSquare.GetPiece());
             MovePieceTo(move.From, move.To);
             gameManager.FenString.SetWhiteToMove(color == Piece.Black);
 
@@ -127,7 +132,7 @@ namespace Code.Board
             Square square = GetSquareAtPosition(cursor.transform.position);
             if (square == null) return;
 
-            if (heldPiece != null)
+            // if (heldPiece != null)
                 HighlightSquare(square);
 
             uiManager.SetNotationText(square.GetNotation());
@@ -152,17 +157,17 @@ namespace Code.Board
             return squares[index];
         }
 
-        public void PickUpPiece(GameObject piece)
+        public void PickUpPiece(int squareIndex)
         {
-            // heldPiece = piece;
-            // heldPiece.transform.SetParent(cursor.transform, false);
+            heldPieceSpriteRenderer.sprite = assetLib.pieceSprites[GetSpriteIndex(pieces[squareIndex].Value)];
+            heldPieceIndex = squareIndex;
+            squares[heldPieceIndex].SetSprite(0);
         }
 
         public bool MovePieceTo(int originIndex, int targetIndex)
         {
             int pieceValue = pieces[originIndex].Value;
             int color = Piece.GetColor(pieceValue);
-            int type = Piece.GetType(pieceValue);
 
             if (!Rules.IsMoveLegal(originIndex, targetIndex, pieces, gameManager.FenString))
                 return false;
@@ -182,7 +187,7 @@ namespace Code.Board
 
             HandlePromotion(originIndex, targetIndex);
 
-            MovePieceToTarget(originIndex, targetIndex);
+            MovePieceToIndex(originIndex, targetIndex);
 
             int opponentColor = color == Piece.White ? Piece.Black : Piece.White;
             int[] pieceValues = Rules.CopyPieceValues(pieces);
@@ -229,11 +234,11 @@ namespace Code.Board
 
                     if (targetIndex == 6 && gameManager.FenString.WhiteCanCastleKingside)
                     {
-                        StaticMovePieceTo(7, 5);
+                        MovePieceToIndex(7, 5);
                     }
                     else if (targetIndex == 2 && gameManager.FenString.WhiteCanCastleQueenside)
                     {
-                        StaticMovePieceTo(0, 3);
+                        MovePieceToIndex(0, 3);
                     }
                 }
                 else
@@ -243,11 +248,11 @@ namespace Code.Board
 
                     if (targetIndex == 62 && gameManager.FenString.BlackCanCastleKingside)
                     {
-                        StaticMovePieceTo(63, 61);
+                        MovePieceToIndex(63, 61);
                     }
                     else if (targetIndex == 58 && gameManager.FenString.BlackCanCastleQueenside)
                     {
-                        StaticMovePieceTo(56, 59);
+                        MovePieceToIndex(56, 59);
                     }
                 }
             }
@@ -277,36 +282,23 @@ namespace Code.Board
             int type = Piece.GetType(pieces[originIndex].Type);
             int color = Piece.GetColor(pieces[originIndex].Color);
             
-            bool promoted = false;
             if (type == Piece.Pawn)
             {
                 if (color == Piece.White && targetIndex >= 56)
                 {
                     pieces[originIndex].Value = Piece.White | Piece.Queen;
-                    promoted = true;
                 }
                 else if (color == Piece.Black && targetIndex <= 7)
                 {
                     pieces[originIndex].Value = Piece.Black | Piece.Queen;
-                    promoted = true;
                 }
             }
-
-            // TODO: Implement UI
-            // if (promoted)
-            //     SetSprite(target.GetPiece(), target.pieceValue);
         }
 
-        private void MovePieceToTarget(int originIndex, int targetIndex)
+        private void MovePieceToIndex(int originIndex, int targetIndex)
         {
             pieces[targetIndex].Value = pieces[originIndex].Value;
             pieces[originIndex].Value = 0;
-
-            // TODO: Implement UI
-            // Transform pieceHolderTransform = target.GetPieceHolderTransform();
-            // heldPiece.transform.SetParent(pieceHolderTransform, false);
-            // heldPiece.transform.localPosition = Vector3.zero;
-            // heldPiece = null;
         }
 
         private void HandleCheckAndMate(int[] pieceValues, int opponentColor)
@@ -327,28 +319,14 @@ namespace Code.Board
 
         private void CapturePieceOn(int index)
         {
-            // TODO: Implement UI
-            // Destroy(pieceSquare.GetPiece().gameObject);
-            // pieceSquare.GetPiece().gameObject.transform.parent = null;
             pieces[index].Value = 0;
         }
 
-        private void StaticMovePieceTo(int originIndex, int targetIndex)
+        public void ResetHeldPiece()
         {
-            pieces[targetIndex].Value = pieces[originIndex].Value;
-            pieces[originIndex].Value = 0;
-
-            // TODO: Implement UI
-            // GameObject movedPiece = origin.GetPiece().gameObject;
-            // movedPiece.transform.parent = target.GetPieceHolderTransform();
-            // movedPiece.transform.localPosition = Vector3.zero;
-        }
-
-        public void ResetPieceToOrigin(int originIndex)
-        {
-            // heldPiece.transform.parent = origin.GetPieceHolderTransform();
-            // heldPiece.transform.localPosition = Vector3.zero;
-            // heldPiece = null;
+            heldPieceSpriteRenderer.sprite = assetLib.pieceSprites[12];
+            squares[heldPieceIndex].SetSprite(pieces[heldPieceIndex].Value);
+            heldPieceIndex = -1;
         }
 
         public void ColorSquare(int squareIndex, Color color)
@@ -402,18 +380,22 @@ namespace Code.Board
                 _highlightedSquare = square;
             }
         }
+        
+        // TODO: Remove duplicate (Square.cs)
+        public int GetSpriteIndex(int pieceValue)
+        {
+            if (pieceValue == 0)
+            {
+                return 12;
+            }
+            
+            int color = Piece.GetColor(pieceValue);
+            int type = Piece.GetType(pieceValue);
 
-        // private void OnDrawGizmos()
-        // {
-        //     // Piece value over each square
-        //     
-        //     for (int i = 0; i < pieces.Length; i++)
-        //     {
-        //         if (pieces[i].Value == 0) continue;
-        //
-        //         Handles.color = Color.black;
-        //         // Handles.Label(squares[i].transform.position + (Vector3.down * .4f), pieces[i].Value.ToString());
-        //     }
-        // }
+            int spriteIndex = color == 16 ? 6 : 0;
+            spriteIndex += type - 1;
+
+            return spriteIndex;
+        }
     }
 }

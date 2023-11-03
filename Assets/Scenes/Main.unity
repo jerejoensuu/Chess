@@ -1509,19 +1509,7 @@ MonoBehaviour:
   uiManager: {fileID: 1240465689}
   gameSettingsInspector: {fileID: 0}
   piecePrefab: {fileID: 7783395455909470511, guid: e6827d56e65c7134a8ab6c36627298dc, type: 3}
-  pieceSprites:
-  - {fileID: 2100530673, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: -551274964, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: 1934585164, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: 2131395530, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: 1599561986, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: 676579524, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: 237476314, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: 1586111969, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: -953414728, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: 455777102, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: 607601041, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
-  - {fileID: 1029665755, guid: 554b0b178bb335748a2e1e9f5edf43da, type: 3}
+  assetLib: {fileID: 11400000, guid: b2a5e10cc21929945801b31c25ef8bab, type: 2}
   lightColor: {r: 0.93333334, g: 0.93333334, b: 0.8235294, a: 1}
   darkColor: {r: 0.4627451, g: 0.5882353, b: 0.3372549, a: 1}
   pieceOriginColor: {r: 0.96862745, g: 0.96862745, b: 0.4117647, a: 1}
@@ -1531,6 +1519,7 @@ MonoBehaviour:
   squares: []
   cursor: {fileID: 0}
   heldPiece: {fileID: 0}
+  heldPieceSpriteRenderer: {fileID: 0}
 --- !u!114 &1282010926
 MonoBehaviour:
   m_ObjectHideFlags: 0

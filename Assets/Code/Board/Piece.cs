@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Code.Board
 {
-    public static class Piece
+    public class Piece
     {
         // The piece is notated with a binary string where the first 2 bits are the color and the next 3 bits are the type
 
@@ -17,7 +19,32 @@ namespace Code.Board
         
         public const int White = 8;
         public const int Black = 16;
+
+        public int Value
+        {
+            get => _value;
+            set
+            {
+                _value = value;
+                try
+                {
+                    OnValueChanged?.Invoke(value);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+        }
         
+        private int _value;
+
+        public int Type => GetType(Value);
+        public int Color => GetColor(Value);
+        
+        public UnityEvent<int> OnValueChanged = new UnityEvent<int>();
+
+
         public static int GetColor(int piece)
         {
             return piece & 24;
@@ -51,6 +78,34 @@ namespace Code.Board
         public static bool IsWhite(int piece)
         {
             return GetColor(piece) == White;
+        }
+        
+        public static string GetPieceNotation(int piece)
+        {
+            string notation = "";
+            switch (GetType(piece))
+            {
+                case Pawn:
+                    notation += "P";
+                    break;
+                case Knight:
+                    notation += "N";
+                    break;
+                case Bishop:
+                    notation += "B";
+                    break;
+                case Rook:
+                    notation += "R";
+                    break;
+                case Queen:
+                    notation += "Q";
+                    break;
+                case King:
+                    notation += "K";
+                    break;
+            }
+
+            return IsWhite(piece) ? notation : notation.ToLower();
         }
     }
 }

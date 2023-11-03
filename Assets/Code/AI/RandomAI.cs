@@ -9,13 +9,12 @@ namespace Code.AI
     {
         protected override Move GetMoveInternal(int color)
         {
-            Square piece = null;
             List<Move> moves = new List<Move>();
 
             while (moves.Count == 0)
             {
-                piece = PickRandomPiece(color);
-                moves = Rules.GetMovesForPiece(piece, Squares, FenString);
+                int pieceIndex = PickRandomPiece(color);
+                moves = Rules.GetMovesForPiece(pieceIndex, Pieces, FenString);
             }
 
             Move move = moves[Random.Range(0, moves.Count)];

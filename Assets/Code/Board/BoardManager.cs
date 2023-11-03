@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Code.AI;
+using Code.Data;
 using Code.UI;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -16,7 +16,7 @@ namespace Code.Board
         public UIManager uiManager;
         public GameSettingsInspector gameSettingsInspector;
         [SerializeField] private GameObject piecePrefab;
-        [SerializeField] private Sprite[] pieceSprites;
+        [SerializeField] private AssetLib assetLib;
         private Camera _mainCamera;
 
         [InspectorLabel("Colors")] public Color lightColor;
@@ -27,10 +27,12 @@ namespace Code.Board
 
         [SerializeField] private float squareSize = 1f;
 
+        public Piece[] pieces = new Piece[64];
         public Square[] squares;
 
         public GameObject cursor;
-        public GameObject heldPiece;
+        public SpriteRenderer heldPieceSpriteRenderer;
+        public int heldPieceIndex = -1;
 
         private Square _highlightedSquare;
 
@@ -38,28 +40,48 @@ namespace Code.Board
         private bool _aiIsThinking;
         [NonSerialized] public bool AutoPlay = true;
         [NonSerialized] public bool Paused = false;
+        
+        private bool _tilesCreated = false;
 
 
         private void Start()
         {
             _mainCamera = Camera.main;
+            
             cursor = new GameObject("Cursor");
+            cursor.AddComponent<SpriteRenderer>();
+            cursor.transform.localScale = 0.31f * Vector3.one;
+            heldPieceSpriteRenderer = cursor.GetComponent<SpriteRenderer>();
         }
 
         public void SetupBoard(string fenString = "default")
         {
-            squares = boardBuilder.BuildBoard(lightColor, darkColor, fenString, squareSize);
+            if (!_tilesCreated)
+            {
+                for (int i = 0; i < pieces.Length; i++)
+                {
+                    pieces[i] = new Piece();
+                }
+                    
+                squares = boardBuilder.BuildBoard(lightColor, darkColor, fenString, squareSize);
+                
+                for (int i = 0; i < pieces.Length; i++)
+                {
+                    pieces[i].OnValueChanged.AddListener(squares[i].SetSprite);
+                }
+
+                _tilesCreated = true;
+            }
+            
             try
             {
-                boardBuilder.SetPiecesFromFenString(fenString, ref squares);
+                boardBuilder.SetPiecesFromFenString(fenString, ref pieces);
             }
             catch (Exception)
             {
                 Debug.LogError("Invalid FEN string:");
-                boardBuilder.SetPiecesFromFenString("default", ref squares);
+                boardBuilder.SetPiecesFromFenString("default", ref pieces);
             }
-
-            InstantiatePieces();
         }
 
         private void Update()
@@ -70,7 +92,7 @@ namespace Code.Board
             {
                 if (!gameManager.FenString.WhiteToMove) StartCoroutine(MakeAIMove(Piece.Black));
                 // else StartCoroutine(MakeAIMove(Piece.White));
-                
+
                 if (!AutoPlay) Paused = true;
             }
 
@@ -87,15 +109,14 @@ namespace Code.Board
             if (_aiIsThinking) yield break;
             _aiIsThinking = true;
 
-            Move move = gameManager.ai.GetMove(squares, gameManager.FenString, color);
+            Move move = gameManager.ai.GetMove(pieces, gameManager.FenString, color);
             Square originSquare = squares[move.From];
             Square targetSquare = squares[move.To];
-            Debug.Log(color == Piece.White
-                ? "White"
-                : "Black" + " is moving " + originSquare.GetNotation() + " to " + targetSquare.GetNotation());
 
-            PickUpPiece(originSquare.GetPiece());
-            MovePieceTo(originSquare, targetSquare);
+            string playerColor = color == Piece.White ? "White" : "Black";
+            Debug.Log(playerColor + " is moving " + originSquare.GetNotation() + " to " + targetSquare.GetNotation());
+
+            MovePieceTo(move.From, move.To);
             gameManager.FenString.SetWhiteToMove(color == Piece.Black);
 
             yield return new WaitForSeconds(0.01f);
@@ -106,17 +127,17 @@ namespace Code.Board
         {
             Vector3 mousePosition = Input.mousePosition;
             mousePosition.z = 10;
-            cursor.transform.position = _mainCamera.ScreenToWorldPoint(mousePosition);
-            cursor.transform.Translate(Vector3.back);
+            cursor.transform.position = _mainCamera.ScreenToWorldPoint(mousePosition) + Vector3.back;
 
             Square square = GetSquareAtPosition(cursor.transform.position);
             if (square == null) return;
 
-            if (heldPiece != null)
+            // if (heldPiece != null)
                 HighlightSquare(square);
 
             uiManager.SetNotationText(square.GetNotation());
         }
+
 
         public Square GetSquareUnderCursor()
         {
@@ -136,210 +157,176 @@ namespace Code.Board
             return squares[index];
         }
 
-        private void InstantiatePieces()
+        public void PickUpPiece(int squareIndex)
         {
-            foreach (Square square in squares)
-            {
-                if (square.GetPieceHolderTransform().childCount > 0)
-                {
-                    Destroy(square.GetPiece().gameObject);
-                }
-
-                if (square.pieceValue == 0) continue;
-
-                GameObject piece = Instantiate(piecePrefab, square.GetPieceHolderTransform());
-                SetSprite(piece, square.pieceValue);
-            }
-        }
-        
-        private void SetSprite(GameObject piece, int pieceValue)
-        {
-            SpriteRenderer spriteRenderer = piece.GetComponentInChildren<SpriteRenderer>();
-            int spriteIndex = Piece.GetColor(pieceValue) == 16 ? 6 : 0;
-            spriteIndex += Piece.GetType(pieceValue) - 1;
-
-            spriteRenderer.sprite = pieceSprites[spriteIndex];
-            piece.name = pieceSprites[spriteIndex].name;
+            heldPieceSpriteRenderer.sprite = assetLib.pieceSprites[GetSpriteIndex(pieces[squareIndex].Value)];
+            heldPieceIndex = squareIndex;
+            squares[heldPieceIndex].SetSprite(0);
         }
 
-        public void PickUpPiece(GameObject piece)
+        public bool MovePieceTo(int originIndex, int targetIndex)
         {
-            heldPiece = piece;
-            heldPiece.transform.parent = cursor.transform;
-            heldPiece.transform.localPosition = Vector3.zero;
-        }
+            int pieceValue = pieces[originIndex].Value;
+            int color = Piece.GetColor(pieceValue);
 
-        public bool MovePieceTo(Square origin, Square target)
-        {
-            if (!Rules.IsMoveLegal(origin, target, squares, gameManager.FenString)) return false;
+            if (!Rules.IsMoveLegal(originIndex, targetIndex, pieces, gameManager.FenString))
+                return false;
+
             gameManager.FenString.IncrementHalfmoveClock();
 
-            // En passant
-            if (Piece.GetType(origin.pieceValue) == Piece.Pawn && Math.Abs(target.index - origin.index) == 16)
-            {
-                gameManager.FenString.SetEnPassantIndex(origin.index +
-                                                        (Piece.GetColor(origin.pieceValue) == Piece.White ? 8 : -8));
-            }
-            else if (Piece.GetType(origin.pieceValue) == Piece.Pawn)
-            {
-                if (target.index == gameManager.FenString.EnPassantIndex)
-                {
-                    CapturePieceOn(squares[target.index + (Piece.GetColor(origin.pieceValue) == Piece.White ? -8 : 8)]);
-                }
-
-                gameManager.FenString.SetEnPassantIndex(-1);
-            }
-            else gameManager.FenString.SetEnPassantIndex(-1);
+            HandleEnPassant(originIndex, targetIndex);
 
             // Capturing
-            if (target.GetPieceHolderTransform().childCount > 0)
-            {
-                CapturePieceOn(target);
-                gameManager.FenString.ResetHalfmoveClock();
-            }
-            
-            if (Piece.GetType(origin.pieceValue) == Piece.Pawn) gameManager.FenString.ResetHalfmoveClock();
+            if (pieces[targetIndex].Value != 0) 
+            { 
+                CapturePieceOn(targetIndex); 
+                gameManager.FenString.ResetHalfmoveClock(); 
+            } 
 
-            // Castling
-            if (Piece.GetType(origin.pieceValue) == Piece.King)
-            {
-                if (Piece.GetColor(origin.pieceValue) == Piece.White)
-                {
-                    gameManager.FenString.SetWhiteCanCastleShort(false);
-                    gameManager.FenString.SetWhiteCanCastleLong(false);
+            HandleCastling(originIndex, targetIndex);
 
-                    if (target.index == 6 && gameManager.FenString.WhiteCanCastleKingside)
-                    {
-                        StaticMovePieceTo(squares[7], squares[5]);
-                    }
-                    else if (target.index == 2 && gameManager.FenString.WhiteCanCastleQueenside)
-                    {
-                        StaticMovePieceTo(squares[0], squares[3]);
-                    }
-                }
-                else
-                {
-                    gameManager.FenString.SetBlackCanCastleShort(false);
-                    gameManager.FenString.SetBlackCanCastleLong(false);
+            HandlePromotion(originIndex, targetIndex);
 
-                    if (target.index == 62 && gameManager.FenString.BlackCanCastleKingside)
-                    {
-                        StaticMovePieceTo(squares[63], squares[61]);
-                    }
-                    else if (target.index == 58 && gameManager.FenString.BlackCanCastleQueenside)
-                    {
-                        StaticMovePieceTo(squares[56], squares[59]);
-                    }
-                }
-            }
+            MovePieceToIndex(originIndex, targetIndex);
 
-            if (Piece.GetType(origin.pieceValue) == Piece.Rook)
-            {
-                if (Piece.GetColor(origin.pieceValue) == Piece.White)
-                {
-                    if (origin.index == 7)
-                    {
-                        gameManager.FenString.SetWhiteCanCastleShort(false);
-                    }
-                    else if (origin.index == 0)
-                    {
-                        gameManager.FenString.SetWhiteCanCastleLong(false);
-                    }
-                }
-                else
-                {
-                    if (origin.index == 63)
-                    {
-                        gameManager.FenString.SetBlackCanCastleShort(false);
-                    }
-                    else if (origin.index == 56)
-                    {
-                        gameManager.FenString.SetBlackCanCastleLong(false);
-                    }
-                }
-            }
+            int opponentColor = color == Piece.White ? Piece.Black : Piece.White;
+            int[] pieceValues = Rules.CopyPieceValues(pieces);
 
-            if (Piece.GetType(origin.pieceValue) == Piece.King)
-            {
-                if (Piece.GetColor(origin.pieceValue) == Piece.White)
-                {
-                    gameManager.FenString.SetWhiteCanCastleShort(false);
-                    gameManager.FenString.SetWhiteCanCastleLong(false);
-                }
-                else
-                {
-                    gameManager.FenString.SetBlackCanCastleShort(false);
-                    gameManager.FenString.SetBlackCanCastleLong(false);
-                }
-            }
-            
-            // Promotion
-            bool promoted = false;
-            if (Piece.GetType(origin.pieceValue) == Piece.Pawn)
-            {
-                if (Piece.GetColor(origin.pieceValue) == Piece.White && target.index >= 56)
-                {
-                    origin.pieceValue = Piece.White | Piece.Queen;
-                    promoted = true;
-                }
-                else if (Piece.GetColor(origin.pieceValue) == Piece.Black && target.index <= 7)
-                {
-                    origin.pieceValue = Piece.Black | Piece.Queen;
-                    promoted = true;
-                }
-            }
-
-            target.pieceValue = origin.pieceValue;
-            origin.pieceValue = 0;
-
-            heldPiece.transform.parent = target.GetPieceHolderTransform();
-            heldPiece.transform.SetSiblingIndex(0);
-            heldPiece.transform.localPosition = Vector3.zero;
-            heldPiece = null;
-            
-            if (promoted) SetSprite(target.GetPiece(), target.pieceValue);
-
-            int opponentColor = Piece.GetColor(target.pieceValue) == Piece.White ? Piece.Black : Piece.White;
-            int[] pieceValues = Rules.CopyPieceValuesFromSquares(squares);
-            if (Rules.IsKingInMate(pieceValues, gameManager.FenString, opponentColor))
-            {
-                Debug.Log("Checkmate!");
-            }
-            else if (Rules.IsKingInCheck(pieceValues, gameManager.FenString, opponentColor))
-            {
-                Debug.Log("Check!");
-            }
+            HandleCheckAndMate(pieceValues, opponentColor);
 
             ResetSquareColors();
-            ColorSquare(origin.index, pieceOriginColor);
-            ColorSquare(target.index, moveIndicatorColor);
-            
-            if (!gameManager.FenString.WhiteToMove) gameManager.FenString.IncrementFullmoveNumber();
-            gameManager.FenString.SetWhiteToMove(!gameManager.FenString.WhiteToMove);
-            return true;
+            ColorSquare(originIndex, pieceOriginColor);
+            ColorSquare(targetIndex, moveIndicatorColor);
 
-            void CapturePieceOn(Square pieceSquare)
+            HandleFullmoveNumber();
+
+            return true;
+        }
+
+        private void HandleEnPassant(int originIndex, int targetIndex)
+        {
+            int type = Piece.GetType(pieces[originIndex].Value);
+            int color = Piece.GetColor(pieces[originIndex].Value);
+
+            gameManager.FenString.SetEnPassantIndex(-1);
+
+            if (type == Piece.Pawn && Mathf.Abs(targetIndex - originIndex) == 16)
             {
-                Destroy(pieceSquare.GetPiece().gameObject);
-                pieceSquare.pieceValue = 0;
+                gameManager.FenString.SetEnPassantIndex(originIndex + (color == Piece.White ? 8 : -8));
+            }
+            else if (type == Piece.Pawn && targetIndex == gameManager.FenString.EnPassantIndex)
+            {
+                CapturePieceOn(targetIndex + (color == Piece.White ? -8 : 8));
             }
         }
 
-        private void StaticMovePieceTo(Square origin, Square target)
+        private void HandleCastling(int originIndex, int targetIndex)
         {
-            target.pieceValue = origin.pieceValue;
-            origin.pieceValue = 0;
+            int type = Piece.GetType(pieces[originIndex].Type);
+            int color = Piece.GetColor(pieces[originIndex].Color);
+            
+            if (type == Piece.King)
+            {
+                if (color == Piece.White)
+                {
+                    gameManager.FenString.SetWhiteCanCastleShort(false);
+                    gameManager.FenString.SetWhiteCanCastleLong(false);
 
-            GameObject movedPiece = origin.GetPiece().gameObject;
-            movedPiece.transform.parent = target.GetPieceHolderTransform();
-            movedPiece.transform.localPosition = Vector3.zero;
+                    if (targetIndex == 6 && gameManager.FenString.WhiteCanCastleKingside)
+                    {
+                        MovePieceToIndex(7, 5);
+                    }
+                    else if (targetIndex == 2 && gameManager.FenString.WhiteCanCastleQueenside)
+                    {
+                        MovePieceToIndex(0, 3);
+                    }
+                }
+                else
+                {
+                    gameManager.FenString.SetBlackCanCastleShort(false);
+                    gameManager.FenString.SetBlackCanCastleLong(false);
+
+                    if (targetIndex == 62 && gameManager.FenString.BlackCanCastleKingside)
+                    {
+                        MovePieceToIndex(63, 61);
+                    }
+                    else if (targetIndex == 58 && gameManager.FenString.BlackCanCastleQueenside)
+                    {
+                        MovePieceToIndex(56, 59);
+                    }
+                }
+            }
+
+            if (type == Piece.Rook)
+            {
+                if (color == Piece.White)
+                {
+                    if (originIndex == 7)
+                        gameManager.FenString.SetWhiteCanCastleShort(false);
+                    else if (originIndex == 0)
+                        gameManager.FenString.SetWhiteCanCastleLong(false);
+                }
+                else
+                {
+                    if (originIndex == 63)
+                        gameManager.FenString.SetBlackCanCastleShort(false);
+                    else if (originIndex == 56)
+                        gameManager.FenString.SetBlackCanCastleLong(false);
+                }
+            }
         }
 
-        public void ResetPieceToOrigin(Square origin)
+        // TODO: Implement option to choose promotion piece
+        private void HandlePromotion(int originIndex, int targetIndex)
         {
-            heldPiece.transform.parent = origin.GetPieceHolderTransform();
-            heldPiece.transform.localPosition = Vector3.zero;
-            heldPiece = null;
+            int type = Piece.GetType(pieces[originIndex].Type);
+            int color = Piece.GetColor(pieces[originIndex].Color);
+            
+            if (type == Piece.Pawn)
+            {
+                if (color == Piece.White && targetIndex >= 56)
+                {
+                    pieces[originIndex].Value = Piece.White | Piece.Queen;
+                }
+                else if (color == Piece.Black && targetIndex <= 7)
+                {
+                    pieces[originIndex].Value = Piece.Black | Piece.Queen;
+                }
+            }
+        }
+
+        private void MovePieceToIndex(int originIndex, int targetIndex)
+        {
+            pieces[targetIndex].Value = pieces[originIndex].Value;
+            pieces[originIndex].Value = 0;
+        }
+
+        private void HandleCheckAndMate(int[] pieceValues, int opponentColor)
+        {
+            if (Rules.IsKingInMate(pieceValues, gameManager.FenString, opponentColor))
+                Debug.Log("Checkmate!");
+            else if (Rules.IsKingInCheck(pieceValues, gameManager.FenString, opponentColor))
+                Debug.Log("Check!");
+        }
+
+        private void HandleFullmoveNumber()
+        {
+            if (!gameManager.FenString.WhiteToMove)
+                gameManager.FenString.IncrementFullmoveNumber();
+
+            gameManager.FenString.SetWhiteToMove(!gameManager.FenString.WhiteToMove);
+        }
+
+        private void CapturePieceOn(int index)
+        {
+            pieces[index].Value = 0;
+        }
+
+        public void ResetHeldPiece()
+        {
+            heldPieceSpriteRenderer.sprite = assetLib.pieceSprites[12];
+            squares[heldPieceIndex].SetSprite(pieces[heldPieceIndex].Value);
+            heldPieceIndex = -1;
         }
 
         public void ColorSquare(int squareIndex, Color color)
@@ -367,7 +354,7 @@ namespace Code.Board
         {
             foreach (Move square in squareIndices)
             {
-                squares[square.To].SetMarkerCircle(true);
+                squares[square.To].SetMarkerCircle(true, pieces[square.To].Value == 0);
             }
         }
 
@@ -392,6 +379,23 @@ namespace Code.Board
 
                 _highlightedSquare = square;
             }
+        }
+        
+        // TODO: Remove duplicate (Square.cs)
+        public int GetSpriteIndex(int pieceValue)
+        {
+            if (pieceValue == 0)
+            {
+                return 12;
+            }
+            
+            int color = Piece.GetColor(pieceValue);
+            int type = Piece.GetType(pieceValue);
+
+            int spriteIndex = color == 16 ? 6 : 0;
+            spriteIndex += type - 1;
+
+            return spriteIndex;
         }
     }
 }

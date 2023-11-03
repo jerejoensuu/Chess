@@ -7,57 +7,57 @@ namespace Code.AI
 {
     public abstract class AI
     {
-        protected Square[] Squares;
+        protected Piece[] Pieces;
         protected FenString FenString;
 
-        protected Square PickRandomPiece(int color)
+        protected int PickRandomPiece(int color)
         {
-            List<Square> pieces = new List<Square>();
-            foreach (Square square in Squares)
+            List<int> pieceIndices = new List<int>();
+            for (int i = 0; i < Pieces.Length; i++)
             {
-                if (square.pieceValue != Piece.None && Piece.GetColor(square.pieceValue) == color)
+                if (Pieces[i].Value != Piece.None && Piece.GetColor(Pieces[i].Value) == color)
                 {
-                    List<Move> moves = Rules.GetMovesForPiece(square, Squares, FenString);
+                    List<Move> moves = Rules.GetMovesForPiece(i, Pieces, FenString);
                     if (moves.Count > 0)
-                        pieces.Add(square);
+                        pieceIndices.Add(i);
                 }
             }
 
-            if (pieces.Count == 0)
+            if (pieceIndices.Count == 0)
             {
                 // TODO: Checkmate
                 Debug.Log("Checkmate");
                 // stop unity editor
                 UnityEditor.EditorApplication.isPlaying = false;
-                return null;
+                return 0;
             }
             
-            return pieces[Random.Range(0, pieces.Count)];
+            return pieceIndices[Random.Range(0, pieceIndices.Count)];
         }
 
-        private List<Square> GetPiecesWithMoves(int color)
+        private List<int> GetPiecesWithMoves(int color)
         {
-            List<Square> pieces = new List<Square>();
-            foreach (Square square in Squares)
+            List<int> pieceIndices = new List<int>();
+            for (int i = 0; i < Pieces.Length; i++)
             {
-                if (square.pieceValue != Piece.None && Piece.GetColor(square.pieceValue) == color)
+                if (Pieces[i].Value != Piece.None && Piece.GetColor(Pieces[i].Value) == color)
                 {
-                    List<Move> moves = Rules.GetMovesForPiece(square, Squares, FenString);
+                    List<Move> moves = Rules.GetMovesForPiece(i, Pieces, FenString);
                     if (moves.Count > 0)
-                        pieces.Add(square);
+                        pieceIndices.Add(i);
                 }
             }
 
-            return pieces;
+            return pieceIndices;
         }
         
         protected List<Move> GetAllPossibleMoves(int color)
         {
-            List<Square> piecesWithMoves = GetPiecesWithMoves(color);
+            List<int> piecesWithMoves = GetPiecesWithMoves(color);
             List<Move> moves = new List<Move>();
-            foreach (Square piece in piecesWithMoves)
+            foreach (int pieceIndex in piecesWithMoves)
             {
-                List<Move> pieceMoves = Rules.GetMovesForPiece(piece, Squares, FenString);
+                List<Move> pieceMoves = Rules.GetMovesForPiece(pieceIndex, Pieces, FenString);
                 foreach (Move move in pieceMoves)
                 {
                     moves.Add(move);
@@ -67,9 +67,9 @@ namespace Code.AI
             return moves;
         }
 
-        public Move GetMove(Square[] squares, FenString fenString, int color)
+        public Move GetMove(Piece[] pieces, FenString fenString, int color)
         {
-            Squares = squares;
+            Pieces = pieces;
             FenString = fenString;
             return GetMoveInternal(color);
         }

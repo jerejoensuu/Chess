@@ -1,3 +1,4 @@
+using Code.Data;
 using UnityEngine;
 
 namespace Code.Board
@@ -8,18 +9,18 @@ namespace Code.Board
         [SerializeField] private GameObject pieceHolder;
         [SerializeField] private SpriteRenderer spriteRenderer;
         private Color _defaultColor;
+        
+        [SerializeField] private AssetLib assetLib;
 
         [SerializeField] private GameObject highlight;
         [SerializeField] private GameObject moveMarker;
         [SerializeField] private GameObject captureMarker;
 
         public int index; // The index of the square on the board, 0-63
-        public int pieceValue; // The value of the piece on the square, refer to Piece.cs
 
-        public Square(int index, int pieceValue)
+        public Square(int index)
         {
             this.index = index;
-            this.pieceValue = pieceValue;
         }
 
         public void SetColor(Color color)
@@ -38,10 +39,10 @@ namespace Code.Board
             spriteRenderer.color = _defaultColor;
         }
 
-        public Transform GetPieceHolderTransform()
-        {
-            return pieceHolder.transform;
-        }
+        // public Transform GetPieceHolderTransform()
+        // {
+        //     return pieceHolder.transform;
+        // }
 
         public GameObject GetPiece()
         {
@@ -53,11 +54,11 @@ namespace Code.Board
             highlight.SetActive(active);
         }
 
-        public void SetMarkerCircle(bool active)
+        public void SetMarkerCircle(bool active, bool isEmpty = false)
         {
             if (active)
             {
-                if (pieceValue == 0)
+                if (isEmpty)
                     moveMarker.SetActive(true);
                 else
                     captureMarker.SetActive(true);
@@ -129,6 +130,32 @@ namespace Code.Board
             string rank = (rankIndex + 1).ToString();
             
             return $"{file}{rank}";
+        }
+        
+        public void SetSprite(int pieceValue)
+        {
+            SpriteRenderer pieceSpriteRenderer = pieceHolder.GetComponentInChildren<SpriteRenderer>();
+            
+            if (pieceValue == 0)
+            {
+                pieceSpriteRenderer.enabled = false;
+                return;
+            }
+            else if (!pieceSpriteRenderer.enabled)
+            {
+                pieceSpriteRenderer.enabled = true;
+            }
+            
+            int color = Piece.GetColor(pieceValue);
+            int type = Piece.GetType(pieceValue);
+
+            int spriteIndex = color == 16 ? 6 : 0;
+            spriteIndex += type - 1;
+
+            Sprite newSprite = assetLib.pieceSprites[spriteIndex];
+
+            pieceSpriteRenderer.sprite = newSprite;
+            // pieceObject.name = newSprite.name;
         }
     }
 }

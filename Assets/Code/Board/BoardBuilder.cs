@@ -37,7 +37,7 @@ namespace Code.Board
             return squares;
         }
         
-        public void SetPiecesFromFenString(string fenString, ref Square[] squares)
+        public void SetPiecesFromFenString(string fenString, ref Piece[] pieces)
         {
             if (fenString == "default")
                 // fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -57,13 +57,13 @@ namespace Code.Board
                         int emptySquares = int.Parse(c.ToString());
                         for (int i = 0; i < emptySquares; i++)
                         {
-                            squares[index].pieceValue = Piece.GetValueForFenChar('e');
+                            pieces[index].Value = Piece.GetValueForFenChar('e');
                             NextIndex();
                         }
                     }
                     else
                     {
-                        squares[index].pieceValue = Piece.GetValueForFenChar(c);
+                        pieces[index].Value = Piece.GetValueForFenChar(c);
                         NextIndex();
                     }
                 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Code.Board;
+using Code.Data;
 using UnityEngine;
 
 namespace Code.AI
@@ -9,7 +10,7 @@ namespace Code.AI
     {
         private List<int> _moveValues = new();
 
-        protected override Move GetMoveInternal(int color)
+        protected override Move GetMoveInternal(Piece[] pieces, FenString fenString, int color)
         {
             _moveValues.Clear();
             List<Move> allPossibleMoves = GetAllPossibleMoves(color);

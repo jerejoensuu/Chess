@@ -108,6 +108,8 @@ namespace Code.Board
         {
             if (_aiIsThinking) yield break;
             _aiIsThinking = true;
+            
+            float startTime = Time.realtimeSinceStartup;
 
             Move move = gameManager.ai.GetMove(pieces, gameManager.FenString, color);
             Square originSquare = squares[move.From];
@@ -119,7 +121,8 @@ namespace Code.Board
             MovePieceTo(move.From, move.To);
             gameManager.FenString.SetWhiteToMove(color == Piece.Black);
 
-            yield return new WaitForSeconds(0.01f);
+            Debug.Log("AI move took " + (Time.realtimeSinceStartup - startTime) + " seconds");
+            
             _aiIsThinking = false;
         }
 

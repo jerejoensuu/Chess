@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Code.Data;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Code.Board
 {
@@ -29,6 +30,7 @@ namespace Code.Board
         private static List<Move> FilterMovesForCheck(int piece, int index, List<Move> moves, int[] pieceValues,
             FenString fenString)
         {
+    Profiler.BeginSample("FilterMovesForCheck");
             List<Move> filteredMoves = new List<Move>();
             int color = Piece.GetColor(piece);
 
@@ -54,16 +56,73 @@ namespace Code.Board
                 throw;
             }
 
-
+Profiler.EndSample();
             return filteredMoves;
         }
 
         public static bool IsKingInCheck(int[] pieceValues, FenString fenString, int color)
         {
+    Profiler.BeginSample("IsKingInCheck");
+            // 1. Check for knights (Check if king can capture any knights as a knight)
             int kingIndex = GetKingIndex(pieceValues, color);
             int opponentColor = color == Piece.White ? Piece.Black : Piece.White;
-            List<Move> opponentMoves = GetMovesForColor(pieceValues, fenString, opponentColor);
-            return opponentMoves.Exists(move => move.To == kingIndex);
+            
+            int[] rowOffsets = { -2, -1, 1, 2, 2, 1, -1, -2 };
+            int[] colOffsets = { 1, 2, 2, 1, -1, -2, -2, -1 };
+
+            int currentRow = kingIndex / 8;
+            int currentCol = kingIndex % 8;
+
+            for (int i = 0; i < 8; i++)
+            {
+                int newRow = currentRow + rowOffsets[i];
+                int newCol = currentCol + colOffsets[i];
+
+                if (newRow is < 0 or >= 8 || newCol is < 0 or >= 8) continue;
+                int targetIndex = newRow * 8 + newCol;
+                int targetPiece = pieceValues[targetIndex];
+
+                if (targetPiece == (Piece.Knight | opponentColor))
+                {
+    Profiler.EndSample();
+                    return true;
+                }
+            }
+            
+            // 2. Check for pawns
+            int direction = color == Piece.White ? 1 : -1;
+            int targetIndex1 = (currentRow + direction) * 8 + currentCol - 1;
+            int targetIndex2 = (currentRow + direction) * 8 + currentCol + 1;
+            if ((targetIndex1 is >= 0 and < 64 && pieceValues[targetIndex1] == (Piece.Pawn | opponentColor))
+                || (targetIndex2 is >= 0 and < 64 && pieceValues[targetIndex2] == (Piece.Pawn | opponentColor)))
+            {
+    Profiler.EndSample();
+                return true;
+            }
+            
+            // 3. Check for sliding pieces
+            // TODO: Figure out some way to optimize this
+            List<Move> moves = GetSlidingMoves(Piece.Rook & color, kingIndex, pieceValues, fenString);
+            foreach (Move move in moves)
+            {
+                if (move.CapturedType == (Piece.Rook | opponentColor) || move.CapturedType == (Piece.Queen | opponentColor))
+                {
+    Profiler.EndSample();
+                    return true;
+                }
+            }
+            moves = GetSlidingMoves(Piece.Bishop | color, kingIndex, pieceValues, fenString);
+            foreach (Move move in moves)
+            {
+                if (move.CapturedType == (Piece.Bishop | opponentColor) || move.CapturedType == (Piece.Queen | opponentColor))
+                {
+    Profiler.EndSample();
+                    return true;
+                }
+            }
+            
+    Profiler.EndSample();
+            return false;
         }
 
         public static bool IsKingInMate(int[] pieceValues, FenString fenString, int color)
@@ -108,6 +167,7 @@ namespace Code.Board
 
         private static List<Move> GetMovesForPiece(int piece, int index, int[] pieceValues, FenString fenString)
         {
+    Profiler.BeginSample("GetMovesForPiece");
             List<Move> moves = Piece.GetType(piece) switch
             {
                 Piece.Pawn => GetMovesForPawn(piece, index, pieceValues, fenString),
@@ -115,6 +175,7 @@ namespace Code.Board
                 _ => GetSlidingMoves(piece, index, pieceValues, fenString)
             };
 
+    Profiler.EndSample();
             return moves;
         }
 
@@ -143,7 +204,6 @@ namespace Code.Board
                     pieceValues[(currentRow + direction) * 8 + currentCol] == 0)
                 {
                     moves.Add(new Move(index, targetIndex, Piece.Pawn & color, 0));
-                    if (targetIndex == -1) Debug.Log("");
                 }
             }
 
@@ -170,7 +230,6 @@ namespace Code.Board
             if (targetIndex == fenString.EnPassantIndex && targetIndex > 0)
             {
                 moves.Add(new Move(index, targetIndex, Piece.Pawn & color, Piece.GetType(pieceValues[targetIndex])));
-                if (targetIndex == -1) Debug.Log("");
             }
 
             // Check for en passant capture to the right
@@ -178,7 +237,6 @@ namespace Code.Board
             if (targetIndex == fenString.EnPassantIndex && targetIndex > 0)
             {
                 moves.Add(new Move(index, targetIndex, Piece.Pawn & color, Piece.GetType(pieceValues[targetIndex])));
-                if (targetIndex == -1) Debug.Log("");
             }
 
             return moves;
@@ -278,12 +336,30 @@ namespace Code.Board
 
         public static int[] CopyPieceValues(Piece[] pieces)
         {
+    Profiler.BeginSample("CopyPieceValues");
             int[] pieceValues = new int[pieces.Length];
             for (int i = 0; i < pieces.Length; i++)
             {
                 pieceValues[i] = pieces[i].Value;
             }
 
+    Profiler.EndSample();
+            return pieceValues;
+        }
+        
+        public static Piece[] CopyPieces(Piece[] pieces)
+        {
+    Profiler.BeginSample("CopyPieces");
+            Piece[] pieceValues = new Piece[pieces.Length];
+            for (int i = 0; i < pieces.Length; i++)
+            {
+                pieceValues[i] = new Piece
+                {
+                    Value = pieces[i].Value
+                };
+            }
+
+    Profiler.EndSample();
             return pieceValues;
         }
     }

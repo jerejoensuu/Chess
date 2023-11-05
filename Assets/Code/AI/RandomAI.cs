@@ -7,7 +7,7 @@ namespace Code.AI
 {
     public class RandomAI : AI
     {
-        protected override Move GetMoveInternal(int color)
+        protected override Move GetMoveInternal(Piece[] pieces, FenString fenString, int color)
         {
             List<Move> moves = new List<Move>();
 

@@ -107,5 +107,26 @@ namespace Code.Board
 
             return IsWhite(piece) ? notation : notation.ToLower();
         }
+        
+        public static int GetPieceValue(int piece)
+        {
+            switch (GetType(piece))
+            {
+                case Pawn:
+                    return 1;
+                case Knight:
+                    return 3;
+                case Bishop:
+                    return 3;
+                case Rook:
+                    return 5;
+                case Queen:
+                    return 9;
+                case King:
+                    return 200;
+                default:
+                    return 0;
+            }
+        }
     }
 }

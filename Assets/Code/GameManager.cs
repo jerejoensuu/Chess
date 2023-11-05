@@ -23,7 +23,7 @@ namespace Code
             _uiManager ??= FindObjectOfType<UIManager>();
             FenString ??= new FenString();
             
-            ai ??= new AI.PseudoSmartAIv1();
+            ai ??= new AI.PseudoSmartAIv2();
         }
 
         private void Start()

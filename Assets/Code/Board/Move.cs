@@ -9,6 +9,8 @@ namespace Code.Board
         public int To;
         public int CapturedType;
         public int Turn;
+        
+        public int Score; // Used by AI to prioritize moves
 
         public readonly string Notation;
 

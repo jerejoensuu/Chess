@@ -40,8 +40,8 @@ namespace Code.Board
         public void SetPiecesFromFenString(string fenString, ref Piece[] pieces)
         {
             if (fenString == "default")
-                // fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-                fenString = "4k3/7r/8/8/8/8/7P/R3K3 w - - 0 1";
+                fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+                // fenString = "4k3/7r/8/8/8/8/7P/R3K3 w - - 0 1";
             
             string[] fenFields = fenString.Split(' ');
             string[] fenRows = fenFields[0].Split('/');
